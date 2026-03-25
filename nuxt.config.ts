@@ -39,8 +39,21 @@ export default defineNuxtConfig({
     server: isDev
       ? {
           hmr: { host: process.env.NUXT_HMR_HOST ?? getLocalIP() },
+          // 重启后提前预热主要页面，避免首次访问卡顿
+          warmup: {
+            ssrFiles: ['./pages/index.vue', './pages/posts/[...slug].vue'],
+            clientFiles: ['./pages/index.vue'],
+          },
         }
       : {},
+    // 预打包 shikijs 核心依赖，避免 SSR bundle 每次重建都重新编译语法文件
+    optimizeDeps: {
+      include: [
+        '@shikijs/core',
+        '@shikijs/engine-oniguruma',
+        '@shikijs/vscode-textmate',
+      ],
+    },
   },
 
   modules: [
@@ -51,9 +64,14 @@ export default defineNuxtConfig({
   ],
 
   icon: {
-    serverBundle: {
-      collections: ["ph"],
-    },
+    // 使用本地 SVG 文件，不依赖外部 CDN 或 npm 包
+    fallbackToApi: false,
+    customCollections: [
+      {
+        prefix: "ph",
+        dir: "./assets/icons/ph",
+      },
+    ],
   },
 
   content: {
@@ -74,34 +92,26 @@ export default defineNuxtConfig({
         default: "vitesse-light",
         dark: "vitesse-dark",
       },
+      // 只保留博客实际使用的语言（统计自 _posts 目录）
       langs: [
+        "sh",
         "bash",
         "shell",
-        "sh",
         "python",
-        "javascript",
-        "typescript",
-        "vue",
-        "html",
-        "css",
-        "json",
-        "yaml",
-        "sql",
-        "go",
-        "rust",
-        "java",
-        "c",
-        "cpp",
-        "markdown",
-        "dockerfile",
-        "nginx",
         "ini",
-        "toml",
-        "xml",
-        "powershell",
-        "lua",
+        "sql",
+        "javascript",
         "vim",
+        "html",
+        "vue",
+        "json",
+        "c",
+        "lua",
+        "java",
+        "yaml",
+        "xml",
         "http",
+        "css",
       ],
     },
   },
@@ -117,6 +127,7 @@ export default defineNuxtConfig({
     siteName: "旧迹微光，向远而行",
     siteTitle: SITE_TITLE,
     siteDescription: SITE_DESCRIPTION,
+    heroBg: "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg-hunter.png",  // 首页全屏 Banner 背景图，留空则使用渐变
     icpText: "浙ICP备18007284号",
     icpUrl: "https://beian.miit.gov.cn",
     policeText: "",

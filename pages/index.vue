@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const { siteName, siteDescription } = useAppConfig()
+definePageMeta({ layout: 'home' })
+
+const { siteName, siteDescription, heroBg } = useAppConfig()
 const PAGE_SIZE = 12
 const page = ref(1)
 
@@ -113,6 +115,37 @@ onUnmounted(() => stopCarousel())
 
 <template>
   <div>
+    <!-- 全屏 Banner -->
+    <section
+      class="hero-section relative w-full overflow-hidden"
+      style="height: calc(100vh - 64px)"
+    >
+      <!-- 背景：有图用图，无图用渐变 -->
+      <div
+        class="absolute inset-0 transition-opacity duration-700"
+        :style="heroBg
+          ? `background: url('${heroBg}') center/cover no-repeat`
+          : 'background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)'"
+      />
+      <!-- 暗色遮罩，增强文字可读性 -->
+      <div class="absolute inset-0 bg-black/45" />
+
+      <!-- 主文字 -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center px-6 gap-6">
+        <p class="hero-quote">
+          Knowledge is simple;<br />practice is difficult.
+        </p>
+        <span class="hero-sub">— 知易行难</span>
+      </div>
+
+      <!-- 向下滚动提示 -->
+      <div class="absolute bottom-8 left-1/2 hero-scroll-hint">
+        <Icon name="ph:caret-double-down" class="w-6 h-6 text-white/50" />
+      </div>
+    </section>
+
+    <!-- 内容区域 -->
+    <div class="container mx-auto px-4 py-10 max-w-5xl w-full">
     <!-- Hero 区域 -->
 
     <!-- 模式 A+B：左侧简介 + 右侧最新文章 -->
@@ -357,5 +390,79 @@ onUnmounted(() => stopCarousel())
         </button>
       </div>
     </div>
+    </div><!-- /container -->
   </div>
 </template>
+
+<style scoped>
+/* ── Banner 主文字 ───────────────────────────────────────────── */
+.hero-quote {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  letter-spacing: 0.02em;
+
+  /* 金色光晕扫过白字 */
+  background: linear-gradient(
+    90deg,
+    #fff 0%,
+    #fff 25%,
+    #fcd34d 50%,
+    #fff 75%,
+    #fff 100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  animation:
+    heroFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both,
+    heroShimmer 5s linear infinite 1.5s;
+
+  /* 柔和文字阴影（text-shadow 对 gradient text 无效，用 filter 代替） */
+  filter: drop-shadow(0 0 24px rgba(252, 211, 77, 0.25));
+}
+
+/* 副标题 */
+.hero-sub {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  letter-spacing: 0.25em;
+  animation: heroFadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+/* 向下滚动箭头 */
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: heroBounce 2.2s ease-in-out infinite 2.5s;
+}
+
+/* ── Keyframes ───────────────────────────────────────────────── */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(44px);
+    filter: blur(6px) drop-shadow(0 0 0px rgba(252, 211, 77, 0));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: drop-shadow(0 0 24px rgba(252, 211, 77, 0.25));
+  }
+}
+
+@keyframes heroShimmer {
+  0%   { background-position: 100% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes heroBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0);   opacity: 0.4; }
+  50%       { transform: translateX(-50%) translateY(10px); opacity: 0.8; }
+}
+</style>
