@@ -25,6 +25,9 @@ function getLocalIP(): string {
 
 const isDev = process.env.NODE_ENV !== "production";
 
+const SITE_TITLE = "UselessBamboo";
+const SITE_DESCRIPTION = "一个记录和总结日常学习和工作中的技术点滴的Knowledge Repository.";
+
 export default defineNuxtConfig({
   devtools: { enabled: false },
 
@@ -46,6 +49,12 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@nuxt/icon",
   ],
+
+  icon: {
+    serverBundle: {
+      collections: ["ph"],
+    },
+  },
 
   content: {
     watch: {
@@ -104,22 +113,22 @@ export default defineNuxtConfig({
     storageKey: "blog-color-mode",
   },
 
+  appConfig: {
+    siteName: "旧迹微光，向远而行",
+    siteTitle: SITE_TITLE,
+    siteDescription: SITE_DESCRIPTION,
+  },
+
   app: {
     head: {
-      title: "Unusebamboo Blog",
+      title: SITE_TITLE,
       htmlAttrs: { lang: "zh-CN" },
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "description", content: "全栈工程师技术博客" },
+        { name: "description", content: SITE_DESCRIPTION },
       ],
-      link: [
-        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
-        },
-      ],
+      link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     },
   },
 

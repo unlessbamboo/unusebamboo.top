@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
+const { siteName } = useAppConfig()
 const category = route.params.name as string
 
 const { data: posts } = await useAsyncData(`category-${category}`, () =>
@@ -10,7 +11,7 @@ const { data: posts } = await useAsyncData(`category-${category}`, () =>
     .find(),
 )
 
-useSeoMeta({ title: `${category} - 分类 - Unusebamboo Blog` })
+useSeoMeta({ title: `${category} - 分类 - ${siteName} Blog` })
 </script>
 
 <template>

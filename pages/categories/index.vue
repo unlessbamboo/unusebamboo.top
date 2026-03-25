@@ -2,6 +2,7 @@
 const { data: posts } = await useAsyncData('all-categories', () =>
   queryContent('/').where({ _extension: 'md' }).only(['categories']).find(),
 )
+const { siteName } = useAppConfig()
 
 const categories = computed(() => {
   const counts: Record<string, number> = {}
@@ -15,7 +16,7 @@ const categories = computed(() => {
     .map(([name, count]) => ({ name, count }))
 })
 
-useSeoMeta({ title: '分类 - Unusebamboo Blog' })
+useSeoMeta({ title: `分类 - ${siteName} Blog` })
 </script>
 
 <template>

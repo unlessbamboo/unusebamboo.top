@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { siteName, siteDescription } = useAppConfig()
 const PAGE_SIZE = 12
 const page = ref(1)
 
@@ -40,14 +41,39 @@ function formatDate(date: string) {
 }
 
 function goPage(p: number) {
+  if (p < 1 || p > totalPages.value) return
   page.value = p
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-useSeoMeta({
-  title: 'Unusebamboo Blog',
-  description: '全栈工程师技术博客，分享 Python、Vue、云原生等技术文章',
+// 分页：显示首尾页 + 当前页前后2页，中间用 null 表示省略号
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const cur = page.value
+  const pages: (number | null)[] = []
+  const add = (n: number) => { if (!pages.includes(n)) pages.push(n) }
+
+  add(1)
+  for (let i = Math.max(2, cur - 2); i <= Math.min(total - 1, cur + 2); i++) add(i)
+  add(total)
+
+  // 插入省略号
+  const result: (number | null)[] = []
+  let prev = 0
+  for (const p of pages) {
+    if (p - prev > 1) result.push(null)
+    result.push(p)
+    prev = p
+  }
+  return result
 })
+
+const jumpInput = ref('')
+function onJump() {
+  const p = parseInt(jumpInput.value)
+  if (!isNaN(p)) goPage(p)
+  jumpInput.value = ''
+}
 
 // Hero 模式
 const { heroMode, initFromStorage } = useHeroMode()
@@ -98,24 +124,30 @@ onUnmounted(() => stopCarousel())
       <!-- 左：站点简介 -->
       <div class="flex-1 min-w-0">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-          Unusebamboo
+          {{ siteName }}
         </h1>
         <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
-          全栈工程师技术博客，分享 Python、Vue、云原生等技术文章
+          {{ siteDescription }}
         </p>
         <div class="flex items-center gap-4 text-sm text-gray-400 dark:text-gray-500">
           <span class="flex items-center gap-1">
             <Icon name="ph:article" class="w-4 h-4" />
             {{ total }} 篇文章
           </span>
-          <span class="flex items-center gap-1">
+          <NuxtLink
+            to="/categories"
+            class="flex items-center gap-1 hover:text-primary-500 transition-colors"
+          >
             <Icon name="ph:folders" class="w-4 h-4" />
             {{ categoryCount }} 个分类
-          </span>
-          <span class="flex items-center gap-1">
+          </NuxtLink>
+          <NuxtLink
+            to="/tags"
+            class="flex items-center gap-1 hover:text-primary-500 transition-colors"
+          >
             <Icon name="ph:tag" class="w-4 h-4" />
             {{ tagCount }} 个标签
-          </span>
+          </NuxtLink>
         </div>
       </div>
 
@@ -256,8 +288,9 @@ onUnmounted(() => stopCarousel())
     <!-- 分页 -->
     <div
       v-if="totalPages > 1"
-      class="flex justify-center items-center gap-2 mt-12"
+      class="flex flex-wrap justify-end items-center gap-2 mt-12"
     >
+      <!-- 上一页 -->
       <button
         :disabled="page === 1"
         class="w-9 h-9 flex items-center justify-center rounded-lg text-sm
@@ -268,20 +301,27 @@ onUnmounted(() => stopCarousel())
         <Icon name="ph:caret-left" class="w-4 h-4" />
       </button>
 
-      <button
-        v-for="p in totalPages"
-        :key="p"
-        class="w-9 h-9 rounded-lg text-sm font-medium transition-colors"
-        :class="
-          p === page
+      <!-- 页码 + 省略号 -->
+      <template v-for="(p, i) in visiblePages" :key="i">
+        <span
+          v-if="p === null"
+          class="w-9 h-9 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm select-none"
+        >
+          …
+        </span>
+        <button
+          v-else
+          class="w-9 h-9 rounded-lg text-sm font-medium transition-colors"
+          :class="p === page
             ? 'bg-primary-600 text-white'
-            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-        "
-        @click="goPage(p)"
-      >
-        {{ p }}
-      </button>
+            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+          @click="goPage(p)"
+        >
+          {{ p }}
+        </button>
+      </template>
 
+      <!-- 下一页 -->
       <button
         :disabled="page === totalPages"
         class="w-9 h-9 flex items-center justify-center rounded-lg text-sm
@@ -291,6 +331,31 @@ onUnmounted(() => stopCarousel())
       >
         <Icon name="ph:caret-right" class="w-4 h-4" />
       </button>
+
+      <!-- 总页数 + 跳转 -->
+      <span class="text-sm text-gray-400 dark:text-gray-500 ml-1">
+        共 {{ totalPages }} 页
+      </span>
+      <div class="flex items-center gap-1 ml-1">
+        <span class="text-sm text-gray-400 dark:text-gray-500">跳转</span>
+        <input
+          v-model="jumpInput"
+          type="number"
+          :min="1"
+          :max="totalPages"
+          class="w-14 h-9 text-center text-sm rounded-lg border border-gray-200 dark:border-gray-700
+                 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300
+                 focus:outline-none focus:border-primary-400 dark:focus:border-primary-500 transition-colors"
+          @keydown.enter="onJump"
+        />
+        <button
+          class="h-9 px-3 rounded-lg text-sm text-gray-500 dark:text-gray-400
+                 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          @click="onJump"
+        >
+          GO
+        </button>
+      </div>
     </div>
   </div>
 </template>

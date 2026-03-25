@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
+const { siteName } = useAppConfig()
 const slug = computed(() => (route.params.slug as string[]).join('/'))
 const contentPath = computed(() => `/${slug.value}`)
 
@@ -13,7 +14,7 @@ if (!post.value) {
 }
 
 useSeoMeta({
-  title: () => `${post.value?.title ?? ''} - Unusebamboo Blog`,
+  title: () => `${post.value?.title ?? ''} - ${siteName} Blog`,
   description: () => post.value?.description ?? '',
   ogImage: () => post.value?.cover ?? '',
 })
@@ -25,6 +26,19 @@ function formatDate(date: string) {
     day: 'numeric',
   })
 }
+
+// 更新日期：优先用 frontmatter 的 updated，否则用文件修改时间 _updatedAt
+// 若两者与发布日期是同一天则不显示（避免重复）
+const displayUpdated = computed(() => {
+  const p = post.value
+  if (!p) return null
+  const raw = p.updated ?? p._mtime
+  if (!raw) return null
+  const updatedDay = new Date(raw).toDateString()
+  const publishDay = p.date ? new Date(p.date).toDateString() : null
+  if (publishDay && updatedDay === publishDay) return null
+  return raw
+})
 
 const { coverMode, initFromStorage } = useCoverMode()
 
@@ -65,6 +79,13 @@ onMounted(() => {
             >
               <Icon name="ph:calendar" class="w-4 h-4" />
               {{ formatDate(post.date) }}
+            </time>
+            <time
+              v-if="displayUpdated"
+              class="text-gray-400 dark:text-gray-500 flex items-center gap-1"
+            >
+              <Icon name="ph:pencil-simple" class="w-4 h-4" />
+              更新于 {{ formatDate(displayUpdated) }}
             </time>
             <NuxtLink
               v-if="post.categories?.[0]"
@@ -108,6 +129,13 @@ onMounted(() => {
           >
             <Icon name="ph:calendar" class="w-4 h-4" />
             {{ formatDate(post.date) }}
+          </time>
+          <time
+            v-if="post.updated"
+            class="text-gray-400 dark:text-gray-500 flex items-center gap-1"
+          >
+            <Icon name="ph:pencil-simple" class="w-4 h-4" />
+            更新于 {{ formatDate(post.updated) }}
           </time>
           <NuxtLink
             v-if="post.categories?.[0]"

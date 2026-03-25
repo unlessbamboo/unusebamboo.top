@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
+const { siteTitle } = useAppConfig()
 
 const navLinks = [
   { name: '首页', path: '/' },
@@ -18,7 +19,7 @@ const navLinks = [
         to="/"
         class="font-bold text-xl text-gray-900 dark:text-white tracking-tight hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
       >
-        Unusebamboo
+        {{ siteTitle }}
       </NuxtLink>
 
       <nav class="flex items-center gap-1">

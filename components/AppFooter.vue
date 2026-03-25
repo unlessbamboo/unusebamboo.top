@@ -1,9 +1,14 @@
+<script setup lang="ts">
+const { siteName } = useAppConfig()
+
+</script>
+
 <template>
   <footer class="border-t border-gray-200 dark:border-gray-800 mt-16">
     <div
       class="container mx-auto px-4 max-w-5xl py-6 text-center text-sm text-gray-400 dark:text-gray-500"
     >
-      © {{ new Date().getFullYear() }} Unusebamboo. Built with
+      © {{ new Date().getFullYear() }} {{ siteName }}. Built with
       <a
         href="https://nuxt.com"
         target="_blank"
