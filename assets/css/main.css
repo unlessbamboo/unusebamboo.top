@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200;
+  }
+}
+
+/* Shiki 代码高亮：按 class 暗黑模式切换 */
+.dark pre code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg);
+}
+
+pre code span {
+  color: var(--shiki-default) !important;
+  background-color: var(--shiki-default-bg);
+}
+
+pre {
+  @apply rounded-xl overflow-x-auto my-6;
+}
+
+/* 文章内容滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+}

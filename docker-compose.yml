@@ -1,0 +1,10 @@
+services:
+  blog:
+    build: .
+    image: blog-nuxt:latest
+    container_name: blog-nuxt
+    ports:
+      - '3016:3000'
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
