@@ -36,7 +36,8 @@ const navLinks = [
           {{ link.name }}
         </NuxtLink>
         <div class="ml-2 flex items-center gap-1">
-          <CoverModeToggle v-if="route.path.startsWith('/posts/')" />
+          <HeroModeToggle v-if="route.path === '/'" />
+          <CoverModeToggle v-else-if="route.path.startsWith('/posts/')" />
           <ThemeToggle />
         </div>
       </nav>

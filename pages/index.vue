@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const PAGE_SIZE = 12
-
 const page = ref(1)
 
 const { data: allPosts } = await useAsyncData('all-posts', () =>
@@ -13,10 +12,32 @@ const { data: allPosts } = await useAsyncData('all-posts', () =>
 
 const total = computed(() => allPosts.value?.length ?? 0)
 const totalPages = computed(() => Math.ceil(total.value / PAGE_SIZE))
-
 const posts = computed(() =>
   allPosts.value?.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE) ?? [],
 )
+
+const categoryCount = computed(() => {
+  const set = new Set<string>()
+  allPosts.value?.forEach(p => p.categories?.forEach((c: string) => set.add(c)))
+  return set.size
+})
+
+const tagCount = computed(() => {
+  const set = new Set<string>()
+  allPosts.value?.forEach(p => p.tags?.forEach((t: string) => set.add(t)))
+  return set.size
+})
+
+const latestPost = computed(() => allPosts.value?.[0])
+const carouselPosts = computed(() => allPosts.value?.slice(0, 5) ?? [])
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 
 function goPage(p: number) {
   page.value = p
@@ -27,14 +48,196 @@ useSeoMeta({
   title: 'Unusebamboo Blog',
   description: '全栈工程师技术博客，分享 Python、Vue、云原生等技术文章',
 })
+
+// Hero 模式
+const { heroMode, initFromStorage } = useHeroMode()
+
+// 轮播逻辑
+const carouselIndex = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
+
+function startCarousel() {
+  stopCarousel()
+  timer = setInterval(() => {
+    carouselIndex.value = (carouselIndex.value + 1) % carouselPosts.value.length
+  }, 4000)
+}
+
+function stopCarousel() {
+  if (timer) { clearInterval(timer); timer = null }
+}
+
+function goSlide(i: number) {
+  carouselIndex.value = i
+  startCarousel()
+}
+
+onMounted(() => {
+  initFromStorage()
+  if (heroMode.value === 'carousel') startCarousel()
+})
+
+watch(heroMode, (val) => {
+  stopCarousel()
+  if (val === 'carousel') startCarousel()
+})
+
+onUnmounted(() => stopCarousel())
 </script>
 
 <template>
   <div>
+    <!-- Hero 区域 -->
+
+    <!-- 模式 A+B：左侧简介 + 右侧最新文章 -->
+    <div
+      v-if="heroMode === 'intro'"
+      class="flex flex-col md:flex-row md:items-center gap-6 mb-10
+             pb-8 border-b border-gray-200 dark:border-gray-800"
+    >
+      <!-- 左：站点简介 -->
+      <div class="flex-1 min-w-0">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+          Unusebamboo
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
+          全栈工程师技术博客，分享 Python、Vue、云原生等技术文章
+        </p>
+        <div class="flex items-center gap-4 text-sm text-gray-400 dark:text-gray-500">
+          <span class="flex items-center gap-1">
+            <Icon name="ph:article" class="w-4 h-4" />
+            {{ total }} 篇文章
+          </span>
+          <span class="flex items-center gap-1">
+            <Icon name="ph:folders" class="w-4 h-4" />
+            {{ categoryCount }} 个分类
+          </span>
+          <span class="flex items-center gap-1">
+            <Icon name="ph:tag" class="w-4 h-4" />
+            {{ tagCount }} 个标签
+          </span>
+        </div>
+      </div>
+
+      <!-- 右：最新文章 -->
+      <NuxtLink
+        v-if="latestPost"
+        :to="`/posts${latestPost._path}`"
+        class="group shrink-0 md:w-72 flex gap-3 p-3 rounded-xl
+               border border-gray-200 dark:border-gray-800
+               hover:border-gray-300 dark:hover:border-gray-700
+               hover:shadow-sm transition-all"
+      >
+        <div class="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <img
+            v-if="latestPost.cover"
+            :src="latestPost.cover"
+            :alt="latestPost.title"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+        <div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div>
+            <p class="text-xs text-primary-600 dark:text-primary-400 mb-1">最新文章</p>
+            <h2 class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2
+                       group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+              {{ latestPost.title }}
+            </h2>
+          </div>
+          <time v-if="latestPost.date" class="text-xs text-gray-400 dark:text-gray-500">
+            {{ formatDate(latestPost.date) }}
+          </time>
+        </div>
+      </NuxtLink>
+    </div>
+
+    <!-- 模式 C：轮播 -->
+    <div
+      v-else
+      class="mb-10 pb-8 border-b border-gray-200 dark:border-gray-800"
+      @mouseenter="stopCarousel"
+      @mouseleave="startCarousel"
+    >
+      <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+        <!-- slides 容器：固定高度，所有 slide 绝对定位 -->
+        <div class="relative h-40">
+          <template v-for="(slide, i) in carouselPosts" :key="slide._path">
+            <div
+              class="absolute inset-0 transition-opacity duration-500"
+              :class="i === carouselIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'"
+            >
+              <!-- 模糊背景 -->
+              <img
+                v-if="slide.cover"
+                :src="slide.cover"
+                :alt="slide.title"
+                class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-25"
+                aria-hidden="true"
+              />
+              <!-- 内容 -->
+              <NuxtLink
+                :to="`/posts${slide._path}`"
+                class="group absolute inset-0 flex gap-5 p-5"
+              >
+                <div class="shrink-0 w-24 h-24 my-auto rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <img
+                    v-if="slide.cover"
+                    :src="slide.cover"
+                    :alt="slide.title"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col justify-center gap-1.5 overflow-hidden">
+                  <span
+                    v-if="slide.categories?.[0]"
+                    class="text-xs font-medium text-primary-600 dark:text-primary-400
+                           bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded w-fit"
+                  >
+                    {{ slide.categories[0] }}
+                  </span>
+                  <h2 class="font-semibold text-gray-900 dark:text-white line-clamp-2
+                             group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    {{ slide.title }}
+                  </h2>
+                  <p
+                    v-if="slide.description"
+                    class="text-sm text-gray-500 dark:text-gray-400 line-clamp-1"
+                  >
+                    {{ slide.description }}
+                  </p>
+                  <div class="flex items-center justify-between">
+                    <time v-if="slide.date" class="text-xs text-gray-400 dark:text-gray-500">
+                      {{ formatDate(slide.date) }}
+                    </time>
+                    <span class="text-xs text-primary-600 dark:text-primary-400 flex items-center gap-0.5">
+                      阅读全文 <Icon name="ph:arrow-right" class="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              </NuxtLink>
+            </div>
+          </template>
+        </div>
+
+        <!-- 指示点：固定在 slides 容器外，高度稳定 -->
+        <div class="flex justify-center gap-1.5 py-2.5 border-t border-gray-100 dark:border-gray-800">
+          <button
+            v-for="(_, i) in carouselPosts"
+            :key="i"
+            class="h-1.5 rounded-full transition-all duration-300"
+            :class="i === carouselIndex
+              ? 'bg-primary-500 w-4'
+              : 'w-1.5 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'"
+            @click="goSlide(i)"
+          />
+        </div>
+      </div>
+    </div>
+
     <!-- 文章列表 -->
     <div
       v-if="posts.length"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
     >
       <PostCard
         v-for="post in posts"
