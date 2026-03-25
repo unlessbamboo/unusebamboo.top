@@ -117,6 +117,11 @@ export default defineNuxtConfig({
     siteName: "旧迹微光，向远而行",
     siteTitle: SITE_TITLE,
     siteDescription: SITE_DESCRIPTION,
+    icpText: "浙ICP备18007284号",
+    icpUrl: "https://beian.miit.gov.cn",
+    policeText: "",
+    policeCode: "",
+    policeIcon: "",
   },
 
   app: {
