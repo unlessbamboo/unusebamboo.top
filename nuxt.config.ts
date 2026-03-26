@@ -25,7 +25,7 @@ function getLocalIP(): string {
 
 const isDev = process.env.NODE_ENV !== "production";
 
-const SITE_TITLE = "UselessBamboo";
+const SITE_TITLE = "UnuseBamboo";
 const SITE_DESCRIPTION =
   "一个记录和总结日常学习和工作中的技术点滴的Knowledge Repository.";
 
@@ -131,6 +131,8 @@ export default defineNuxtConfig({
     siteName: "旧迹微光，向远而行",
     siteTitle: SITE_TITLE,
     siteDescription: SITE_DESCRIPTION,
+    siteQuote: "Knowledge is simple, practice is difficult.",
+    siteSub: "- 知易行难",
     heroBg:
       "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg-blog.png", // 首页全屏 Banner 背景图，留空则使用渐变
     icpText: "浙ICP备18007284号",
