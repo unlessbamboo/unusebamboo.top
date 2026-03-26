@@ -26,10 +26,14 @@ function getLocalIP(): string {
 const isDev = process.env.NODE_ENV !== "production";
 
 const SITE_TITLE = "UselessBamboo";
-const SITE_DESCRIPTION = "一个记录和总结日常学习和工作中的技术点滴的Knowledge Repository.";
+const SITE_DESCRIPTION =
+  "一个记录和总结日常学习和工作中的技术点滴的Knowledge Repository.";
 
 export default defineNuxtConfig({
   devtools: { enabled: false },
+
+  // 开发环境关闭 SSR，只编译客户端 bundle，HMR 更快；生产保持 SSR
+  ssr: !isDev,
 
   devServer: {
     host: "0.0.0.0",
@@ -41,17 +45,17 @@ export default defineNuxtConfig({
           hmr: { host: process.env.NUXT_HMR_HOST ?? getLocalIP() },
           // 重启后提前预热主要页面，避免首次访问卡顿
           warmup: {
-            ssrFiles: ['./pages/index.vue', './pages/posts/[...slug].vue'],
-            clientFiles: ['./pages/index.vue'],
+            ssrFiles: ["./pages/index.vue", "./pages/posts/[...slug].vue"],
+            clientFiles: ["./pages/index.vue"],
           },
         }
       : {},
     // 预打包 shikijs 核心依赖，避免 SSR bundle 每次重建都重新编译语法文件
     optimizeDeps: {
       include: [
-        '@shikijs/core',
-        '@shikijs/engine-oniguruma',
-        '@shikijs/vscode-textmate',
+        "@shikijs/core",
+        "@shikijs/engine-oniguruma",
+        "@shikijs/vscode-textmate",
       ],
     },
   },
@@ -127,7 +131,8 @@ export default defineNuxtConfig({
     siteName: "旧迹微光，向远而行",
     siteTitle: SITE_TITLE,
     siteDescription: SITE_DESCRIPTION,
-    heroBg: "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg-hunter.png",  // 首页全屏 Banner 背景图，留空则使用渐变
+    heroBg:
+      "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg-blog.png", // 首页全屏 Banner 背景图，留空则使用渐变
     icpText: "浙ICP备18007284号",
     icpUrl: "https://beian.miit.gov.cn",
     policeText: "",
