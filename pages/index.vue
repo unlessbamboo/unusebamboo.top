@@ -191,12 +191,20 @@ onUnmounted(() => stopCarousel());
 
     <!-- 内容区域 -->
     <div class="container mx-auto px-4 py-10 max-w-5xl w-full">
-      <!-- Hero 区域 -->
+      <!-- Hero 区域（含模式切换按钮） -->
+      <div class="relative mb-10 pb-8 border-b border-gray-200 dark:border-gray-800">
+        <!-- 模式切换按钮：右上角，z-10 确保在轮播 NuxtLink 之上 -->
+        <div class="absolute top-0 right-0 z-20">
+          <HeroModeToggle />
+        </div>
+
+        <!-- 两个模式叠在同一 grid 单元格，高度始终取两者最大值，切换只改 opacity -->
+        <div class="grid">
 
       <!-- 模式 A+B：左侧简介 + 右侧最新文章 -->
       <div
-        v-if="heroMode === 'intro'"
-        class="flex flex-col md:flex-row md:items-center gap-6 mb-10 pb-8 border-b border-gray-200 dark:border-gray-800"
+        class="col-start-1 row-start-1 flex flex-col md:flex-row md:items-center gap-6 transition-opacity duration-300"
+        :class="heroMode === 'intro' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
       >
         <!-- 左：站点简介 -->
         <div class="flex-1 min-w-0">
@@ -269,8 +277,8 @@ onUnmounted(() => stopCarousel());
 
       <!-- 模式 C：轮播 -->
       <div
-        v-else
-        class="mb-10 pb-8 border-b border-gray-200 dark:border-gray-800"
+        class="col-start-1 row-start-1 transition-opacity duration-300"
+        :class="heroMode !== 'intro' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
         @mouseenter="stopCarousel"
         @mouseleave="startCarousel"
       >
@@ -368,6 +376,8 @@ onUnmounted(() => stopCarousel());
           </div>
         </div>
       </div>
+        </div><!-- /grid -->
+      </div><!-- /Hero 区域外层 -->
 
       <!-- 文章列表 -->
       <div

@@ -25,7 +25,7 @@ function getLocalIP(): string {
 
 const isDev = process.env.NODE_ENV !== "production";
 
-const SITE_TITLE = "UnuseBamboo";
+const SITE_TITLE = "旧迹微光，向远而行";
 const SITE_DESCRIPTION =
   "一个记录和总结日常学习和工作中的技术点滴的Knowledge Repository.";
 
@@ -128,7 +128,7 @@ export default defineNuxtConfig({
   },
 
   appConfig: {
-    siteName: "旧迹微光，向远而行",
+    siteName: SITE_TITLE,
     siteTitle: SITE_TITLE,
     siteDescription: SITE_DESCRIPTION,
     siteQuote: "Knowledge is simple, practice is difficult.",

@@ -20,7 +20,7 @@ const navLinks = [
     :class="[
       'z-50 transition-all duration-300',
       isHome
-        ? 'fixed top-0 left-0 right-0 bg-white/40 backdrop-blur-sm'
+        ? 'fixed top-0 left-0 right-0 bg-white/60 backdrop-blur-sm'
         : 'sticky top-0 border-b border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm',
     ]"
   >
