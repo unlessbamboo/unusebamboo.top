@@ -4,38 +4,35 @@ const { siteName, icpText, icpUrl, policeText, policeCode, policeIcon } = useApp
 const logoTitle = siteName.split(/[，,]/)[0]
 
 const metrics = [
-  { value: '120k', label: 'WORD COUNT' },
-  { value: '45k',  label: 'TOTAL VIEWS' },
-  { value: '12k',  label: 'VISITORS' },
-  { value: '99.9%', label: 'UPTIME' },
+  { value: '120k', label: '字数' },
+  { value: '45k',  label: '浏览' },
+  { value: '12k',  label: '访客' },
+  { value: '99.9%', label: '可用率' },
 ]
 
 const archiveLinks = [
-  { name: 'ARCHIVE INDEX', path: '/' },
-  { name: 'LIBRARY',       path: '/categories' },
-  { name: 'TAGS',          path: '/tags' },
-  { name: 'RSS FEED',      path: '/feed.xml' },
+  { name: '文章索引', path: '/' },
+  { name: '分类',     path: '/categories' },
+  { name: '标签',     path: '/tags' },
+  { name: 'RSS',      path: '/feed.xml' },
 ]
 </script>
 
 <template>
-  <footer class="border-t border-stone-200 dark:border-gray-800 mt-16" style="background-color: #f0ede8;">
-    <div class="container mx-auto px-6 max-w-6xl py-12">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-start">
+  <footer class="border-t border-stone-200 dark:border-gray-800 mt-16 bg-[#f0ede8] dark:bg-gray-900">
+    <div class="container mx-auto px-6 max-w-6xl py-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
 
         <!-- 左：站点信息 -->
-        <div class="flex flex-col gap-3">
-          <span class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+        <div class="flex flex-col gap-1">
+          <span class="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
             {{ logoTitle }}
           </span>
-          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-            © {{ new Date().getFullYear() }} {{ logoTitle }} (UselessBamboo).<br />
-            All rights reserved.
+          <p class="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
+            © {{ new Date().getFullYear() }} {{ logoTitle }} (UselessBamboo). 保留所有权利。
           </p>
-          <p class="text-sm italic text-gray-400 dark:text-gray-500">
-            Built with Nuxt Content
-          </p>
-          <div v-if="icpText || policeText" class="flex flex-col gap-1 mt-1">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+            <span class="text-xs italic text-gray-400 dark:text-gray-500">基于 Nuxt Content 构建</span>
             <a
               v-if="icpText"
               :href="icpUrl"
@@ -50,37 +47,37 @@ const archiveLinks = [
               rel="noopener"
               class="flex items-center gap-1 text-xs text-gray-400 hover:text-primary-500 transition-colors"
             >
-              <img v-if="policeIcon" :src="policeIcon" alt="公安备案" class="h-3.5 w-3.5" />
+              <img v-if="policeIcon" :src="policeIcon" alt="公安备案" class="h-3 w-3" />
               {{ policeText }}
             </a>
           </div>
         </div>
 
-        <!-- 中：统计指标 -->
+        <!-- 中：站点统计 -->
         <div>
-          <p class="text-xs font-semibold tracking-[0.2em] text-gray-400 dark:text-gray-500 uppercase mb-4">
-            Archival Metrics
+          <p class="text-[10px] font-semibold tracking-[0.18em] text-gray-400 dark:text-gray-500 uppercase mb-2">
+            站点统计
           </p>
-          <div class="bg-stone-200/60 dark:bg-gray-800 rounded-xl p-5 grid grid-cols-2 gap-y-5 gap-x-4">
-            <div v-for="m in metrics" :key="m.label">
-              <p class="text-2xl font-bold text-gray-900 dark:text-white leading-none">{{ m.value }}</p>
-              <p class="text-xs text-gray-400 dark:text-gray-500 tracking-wider mt-1">{{ m.label }}</p>
+          <div class="flex flex-wrap gap-x-5 gap-y-1">
+            <div v-for="m in metrics" :key="m.label" class="flex items-baseline gap-1">
+              <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ m.value }}</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-500 tracking-wide">{{ m.label }}</span>
             </div>
           </div>
         </div>
 
-        <!-- 右：导航链接 -->
+        <!-- 右：快速导航 -->
         <div class="text-right">
-          <p class="text-xs font-semibold tracking-[0.2em] text-gray-400 dark:text-gray-500 uppercase mb-4">
-            The Archive
+          <p class="text-[10px] font-semibold tracking-[0.18em] text-gray-400 dark:text-gray-500 uppercase mb-2">
+            快速导航
           </p>
-          <nav class="flex flex-col gap-2.5">
+          <nav class="flex flex-wrap gap-x-3 gap-y-1 justify-end">
             <NuxtLink
               v-for="link in archiveLinks"
               :key="link.path"
               :to="link.path"
-              class="text-sm font-medium tracking-[0.12em] text-gray-600 dark:text-gray-300
-                     hover:text-gray-900 dark:hover:text-white transition-colors uppercase"
+              class="text-xs font-medium tracking-wide text-gray-600 dark:text-gray-300
+                     hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               {{ link.name }}
             </NuxtLink>

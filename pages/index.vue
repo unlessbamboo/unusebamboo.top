@@ -106,6 +106,40 @@ function onJump() {
 // Hero 模式
 const { heroMode, initFromStorage } = useHeroMode();
 
+// Hero banner 显示/隐藏（useState 跨导航保持，刷新重置）
+const heroVisible = useHeroVisible();
+const heroHiding = ref(false);
+
+function dismissHero() {
+  if (!heroVisible.value || heroHiding.value) return;
+  heroHiding.value = true;
+  setTimeout(() => {
+    heroVisible.value = false;
+    heroHiding.value = false;
+    window.scrollTo({ top: 0 });
+  }, 320);
+}
+
+function onHeroWheel(e: WheelEvent) {
+  if (e.deltaY > 0) dismissHero();
+}
+
+// 在顶部连续上滚 4 次重新显示 hero
+const upScrollCount = ref(0);
+
+function onWindowWheel(e: WheelEvent) {
+  if (heroVisible.value) return;
+  if (window.scrollY <= 0 && e.deltaY < 0) {
+    upScrollCount.value++;
+    if (upScrollCount.value >= 4) {
+      upScrollCount.value = 0;
+      heroVisible.value = true;
+    }
+  } else if (e.deltaY > 0) {
+    upScrollCount.value = 0;
+  }
+}
+
 // 轮播逻辑
 const carouselIndex = ref(0);
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -133,6 +167,7 @@ function goSlide(i: number) {
 onMounted(() => {
   initFromStorage();
   if (heroMode.value === "carousel") startCarousel();
+  window.addEventListener('wheel', onWindowWheel, { passive: true });
 });
 
 watch(heroMode, (val) => {
@@ -140,13 +175,22 @@ watch(heroMode, (val) => {
   if (val === "carousel") startCarousel();
 });
 
-onUnmounted(() => stopCarousel());
+onUnmounted(() => {
+  stopCarousel();
+  window.removeEventListener('wheel', onWindowWheel);
+});
 </script>
 
 <template>
   <div>
     <!-- 全屏 Banner -->
-    <section class="hero-section relative w-full h-screen overflow-hidden">
+    <section
+      v-if="heroVisible"
+      class="hero-section relative w-full h-screen overflow-hidden cursor-pointer transition-opacity duration-300"
+      :class="heroHiding ? 'opacity-0' : 'opacity-100'"
+      @click="dismissHero"
+      @wheel="onHeroWheel"
+    >
       <!-- 背景：有图用图，无图用渐变 -->
       <div
         class="absolute inset-0"
@@ -189,8 +233,8 @@ onUnmounted(() => stopCarousel());
       </div>
     </section>
 
-    <!-- 内容区域 -->
-    <div class="container mx-auto px-4 py-10 max-w-5xl w-full">
+    <!-- 内容区域：hero 消失后加 pt-16 避免被固定导航栏遮挡 -->
+    <div class="container mx-auto px-4 py-10 max-w-5xl w-full" :class="{ 'pt-20': !heroVisible }">
       <!-- Hero 区域（含模式切换按钮） -->
       <div class="relative mb-10 pb-8 border-b border-gray-200 dark:border-gray-800">
         <!-- 模式切换按钮：右上角，z-10 确保在轮播 NuxtLink 之上 -->

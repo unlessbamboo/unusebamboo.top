@@ -6,6 +6,16 @@ const logoTitle = siteName.split(/[，,]/)[0];
 const logoFirst = computed(() => logoTitle[0]);
 const logoRest = computed(() => logoTitle.slice(1));
 const isHome = computed(() => route.path === "/");
+const heroVisible = useHeroVisible();
+
+// 首页 hero 展示时用透明玻璃；hero 消失后或其他页面用暖米白/深色背景
+const headerBg = computed(() => {
+  if (isHome.value && heroVisible.value) {
+    // hero 背景图偏暗，亮色用白色玻璃，暗色用黑色玻璃
+    return 'fixed top-0 left-0 right-0 bg-white/50 dark:bg-black/30 backdrop-blur-sm';
+  }
+  return 'sticky top-0 border-b border-[#e5ddd0] dark:border-gray-800 bg-[#f7f4ef]/95 dark:bg-gray-900/95 backdrop-blur-sm';
+});
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -16,14 +26,7 @@ const navLinks = [
 </script>
 
 <template>
-  <header
-    :class="[
-      'z-50 transition-all duration-300',
-      isHome
-        ? 'fixed top-0 left-0 right-0 bg-white/60 backdrop-blur-sm'
-        : 'sticky top-0 border-b border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm',
-    ]"
-  >
+  <header :class="['z-50 transition-all duration-300', headerBg]">
     <div class="container mx-auto px-6 max-w-6xl h-16 flex items-center">
       <!-- 左：Logo -->
       <NuxtLink
