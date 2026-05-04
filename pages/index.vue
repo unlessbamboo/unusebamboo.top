@@ -54,7 +54,6 @@ const tagCount = computed(() => {
   return set.size;
 });
 
-const latestPost = computed(() => allPosts.value?.[0]);
 const carouselPosts = computed(() => allPosts.value?.slice(0, 5) ?? []);
 
 function formatDate(date: string) {
@@ -102,9 +101,6 @@ function onJump() {
   if (!isNaN(p)) goPage(p);
   jumpInput.value = "";
 }
-
-// Hero 模式
-const { heroMode, initFromStorage } = useHeroMode();
 
 // Hero banner 显示/隐藏（useState 跨导航保持，刷新重置）
 const heroVisible = useHeroVisible();
@@ -165,14 +161,8 @@ function goSlide(i: number) {
 }
 
 onMounted(() => {
-  initFromStorage();
-  if (heroMode.value === "carousel") startCarousel();
+  startCarousel();
   window.addEventListener('wheel', onWindowWheel, { passive: true });
-});
-
-watch(heroMode, (val) => {
-  stopCarousel();
-  if (val === "carousel") startCarousel();
 });
 
 onUnmounted(() => {
@@ -235,193 +225,104 @@ onUnmounted(() => {
 
     <!-- 内容区域：hero 消失后加 pt-16 避免被固定导航栏遮挡 -->
     <div class="container mx-auto px-4 py-10 max-w-5xl w-full" :class="{ 'pt-20': !heroVisible }">
-      <!-- Hero 区域（含模式切换按钮） -->
-      <div class="relative mb-10 pb-8 border-b border-gray-200 dark:border-gray-800">
-        <!-- 模式切换按钮：右上角，z-10 确保在轮播 NuxtLink 之上 -->
-        <div class="absolute top-0 right-0 z-20">
-          <HeroModeToggle />
-        </div>
+      <!-- 内容区域：左侧简介 + 右侧上下轮播 -->
+      <div class="mb-10 pb-8 border-b border-gray-200 dark:border-gray-800">
+        <div class="flex flex-col md:flex-row md:items-stretch gap-8">
 
-        <!-- 两个模式叠在同一 grid 单元格，高度始终取两者最大值，切换只改 opacity -->
-        <div class="grid">
-
-      <!-- 模式 A+B：左侧简介 + 右侧最新文章 -->
-      <div
-        class="col-start-1 row-start-1 flex flex-col md:flex-row md:items-center gap-6 transition-opacity duration-300"
-        :class="heroMode === 'intro' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
-      >
-        <!-- 左：站点简介 -->
-        <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            {{ siteName }}
-          </h1>
-          <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
-            {{ siteDescription }}
-          </p>
-          <div
-            class="flex items-center gap-4 text-sm text-gray-400 dark:text-gray-500"
-          >
-            <span class="flex items-center gap-1">
-              <Icon name="ph:article" class="w-4 h-4" />
-              {{ total }} 篇文章
-            </span>
-            <NuxtLink
-              to="/categories"
-              class="flex items-center gap-1 hover:text-primary-500 transition-colors"
-            >
-              <Icon name="ph:folders" class="w-4 h-4" />
-              {{ categoryCount }} 个分类
-            </NuxtLink>
-            <NuxtLink
-              to="/tags"
-              class="flex items-center gap-1 hover:text-primary-500 transition-colors"
-            >
-              <Icon name="ph:tag" class="w-4 h-4" />
-              {{ tagCount }} 个标签
-            </NuxtLink>
-          </div>
-        </div>
-
-        <!-- 右：最新文章 -->
-        <NuxtLink
-          v-if="latestPost"
-          :to="`/posts${latestPost._path}`"
-          class="group shrink-0 md:w-72 flex gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm transition-all"
-        >
-          <div
-            class="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800"
-          >
-            <img
-              v-if="latestPost.cover"
-              :src="latestPost.cover"
-              :alt="latestPost.title"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-          <div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-            <div>
-              <p class="text-xs text-primary-600 dark:text-primary-400 mb-1">
-                最新文章
-              </p>
-              <h2
-                class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
+          <!-- 左：站点简介 -->
+          <div class="flex-1 min-w-0">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              {{ siteName }}
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
+              {{ siteDescription }}
+            </p>
+            <div class="flex items-center gap-4 text-sm text-gray-400 dark:text-gray-500">
+              <span class="flex items-center gap-1">
+                <Icon name="ph:article" class="w-4 h-4" />
+                {{ total }} 篇文章
+              </span>
+              <NuxtLink
+                to="/categories"
+                class="flex items-center gap-1 hover:text-primary-500 transition-colors"
               >
-                {{ latestPost.title }}
-              </h2>
+                <Icon name="ph:folders" class="w-4 h-4" />
+                {{ categoryCount }} 个分类
+              </NuxtLink>
+              <NuxtLink
+                to="/tags"
+                class="flex items-center gap-1 hover:text-primary-500 transition-colors"
+              >
+                <Icon name="ph:tag" class="w-4 h-4" />
+                {{ tagCount }} 个标签
+              </NuxtLink>
             </div>
-            <time
-              v-if="latestPost.date"
-              class="text-xs text-gray-400 dark:text-gray-500"
-            >
-              {{ formatDate(latestPost.date) }}
-            </time>
           </div>
-        </NuxtLink>
-      </div>
 
-      <!-- 模式 C：轮播 -->
-      <div
-        class="col-start-1 row-start-1 transition-opacity duration-300"
-        :class="heroMode !== 'intro' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
-        @mouseenter="stopCarousel"
-        @mouseleave="startCarousel"
-      >
-        <div
-          class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800"
-        >
-          <!-- slides 容器：固定高度，所有 slide 绝对定位 -->
-          <div class="relative h-40">
-            <template v-for="(slide, i) in carouselPosts" :key="slide._path">
-              <div
-                class="absolute inset-0 transition-opacity duration-500"
-                :class="
-                  i === carouselIndex
-                    ? 'opacity-100 z-10'
-                    : 'opacity-0 z-0 pointer-events-none'
-                "
-              >
-                <!-- 模糊背景 -->
-                <img
-                  v-if="slide.cover"
-                  :src="slide.cover"
-                  :alt="slide.title"
-                  class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-25"
-                  aria-hidden="true"
-                />
-                <!-- 内容 -->
+          <!-- 右：上下轮播最新文章 -->
+          <div
+            class="shrink-0 md:w-80 rounded-xl border border-[#e5ddd0] dark:border-gray-800
+                   flex flex-row overflow-hidden bg-[#fdf9f3] dark:bg-gray-900"
+            @mouseenter="stopCarousel"
+            @mouseleave="startCarousel"
+          >
+            <!-- 轮播主体 -->
+            <div class="relative flex-1 overflow-hidden">
+              <Transition name="slide-up">
                 <NuxtLink
-                  :to="`/posts${slide._path}`"
-                  class="group absolute inset-0 flex gap-5 p-5"
+                  v-if="carouselPosts[carouselIndex]"
+                  :key="carouselIndex"
+                  :to="`/posts${carouselPosts[carouselIndex]._path}`"
+                  class="group absolute inset-0 flex gap-3 p-3"
                 >
-                  <div
-                    class="shrink-0 w-24 h-24 my-auto rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800"
-                  >
+                  <div class="shrink-0 w-16 h-16 my-auto rounded-lg overflow-hidden bg-stone-100 dark:bg-gray-800">
                     <img
-                      v-if="slide.cover"
-                      :src="slide.cover"
-                      :alt="slide.title"
+                      v-if="carouselPosts[carouselIndex].cover"
+                      :src="carouselPosts[carouselIndex].cover"
+                      :alt="carouselPosts[carouselIndex].title"
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
                     />
                   </div>
-                  <div
-                    class="flex-1 min-w-0 flex flex-col justify-center gap-1.5 overflow-hidden"
-                  >
+                  <div class="flex-1 min-w-0 flex flex-col justify-center gap-1 overflow-hidden">
                     <span
-                      v-if="slide.categories?.[0]"
-                      class="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded w-fit"
+                      v-if="carouselPosts[carouselIndex].categories?.[0]"
+                      class="text-[10px] font-semibold tracking-[0.15em] uppercase text-amber-700/65 dark:text-amber-400/65"
                     >
-                      {{ slide.categories[0] }}
+                      {{ carouselPosts[carouselIndex].categories[0] }}
                     </span>
-                    <h2
-                      class="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
-                    >
-                      {{ slide.title }}
+                    <h2 class="text-sm font-medium text-stone-800 dark:text-white line-clamp-2
+                               group-hover:text-amber-800 dark:group-hover:text-amber-400
+                               transition-colors leading-snug">
+                      {{ carouselPosts[carouselIndex].title }}
                     </h2>
-                    <p
-                      v-if="slide.description"
-                      class="text-sm text-gray-500 dark:text-gray-400 line-clamp-1"
+                    <time
+                      v-if="carouselPosts[carouselIndex].date"
+                      class="text-[10px] text-stone-400 dark:text-stone-500 tracking-wide"
                     >
-                      {{ slide.description }}
-                    </p>
-                    <div class="flex items-center justify-between">
-                      <time
-                        v-if="slide.date"
-                        class="text-xs text-gray-400 dark:text-gray-500"
-                      >
-                        {{ formatDate(slide.date) }}
-                      </time>
-                      <span
-                        class="text-xs text-primary-600 dark:text-primary-400 flex items-center gap-0.5"
-                      >
-                        阅读全文 <Icon name="ph:arrow-right" class="w-3 h-3" />
-                      </span>
-                    </div>
+                      {{ formatDate(carouselPosts[carouselIndex].date) }}
+                    </time>
                   </div>
                 </NuxtLink>
-              </div>
-            </template>
+              </Transition>
+            </div>
+
+            <!-- 右侧竖向指示点 -->
+            <div class="flex flex-col items-center justify-center gap-1.5 px-2 border-l border-[#ede5d8] dark:border-gray-800">
+              <button
+                v-for="(_, i) in carouselPosts"
+                :key="i"
+                class="w-1 rounded-full transition-all duration-300"
+                :class="i === carouselIndex
+                  ? 'bg-amber-600 h-4'
+                  : 'h-1.5 bg-stone-300 dark:bg-gray-600 hover:bg-stone-400'"
+                @click="goSlide(i)"
+              />
+            </div>
           </div>
 
-          <!-- 指示点：固定在 slides 容器外，高度稳定 -->
-          <div
-            class="flex justify-center gap-1.5 py-2.5 border-t border-gray-100 dark:border-gray-800"
-          >
-            <button
-              v-for="(_, i) in carouselPosts"
-              :key="i"
-              class="h-1.5 rounded-full transition-all duration-300"
-              :class="
-                i === carouselIndex
-                  ? 'bg-primary-500 w-4'
-                  : 'w-1.5 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
-              "
-              @click="goSlide(i)"
-            />
-          </div>
         </div>
       </div>
-        </div><!-- /grid -->
-      </div><!-- /Hero 区域外层 -->
 
       <!-- 文章列表 -->
       <div
@@ -562,5 +463,21 @@ onUnmounted(() => {
 @keyframes heroBounce {
   0%, 100% { transform: translateY(0);    opacity: 0.4; }
   50%      { transform: translateY(8px);  opacity: 0.8; }
+}
+
+/* ── 上下轮播过渡 ─────────────────────────────────────────────── */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  position: absolute;
+  inset: 0;
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>

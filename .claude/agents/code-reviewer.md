@@ -1,8 +1,12 @@
 ---
 name: code-reviewer
 description: "代码审查专家,代码改动后自动触发"
-tools: Read, Grep, Glob, Bash
-model: sonnet
+model: Sonnet
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
 ---
 
 你是一位资深代码审查专家.检查以下维度:

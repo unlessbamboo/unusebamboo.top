@@ -2,21 +2,21 @@
 
 ## 项目概览
 
-个人技术博客，基于 Nuxt 3 + Nuxt Content v2 构建。
-内容仓库（markdown 文章）通过符号链接 `./blog` 引入，路径指向 `~/Documents/blog`。
+个人技术博客，基于 Nuxt 3 + Nuxt Content v2 构建,从而构建一个比较酷炫的,个人博客网站,其最终呈现的是一个包含 home, categories, about, project4 个页面的网站.
+博客内容内容通过符号链接 `./blog` 引入，路径指向本地的某个目录。
 
 ---
 
 ## 技术栈
 
-| 层级 | 技术 |
-|------|------|
-| 框架 | Nuxt 3（SSR 模式） |
-| 内容 | @nuxt/content v2（读取 markdown） |
-| 样式 | Tailwind CSS + @tailwindcss/typography |
-| 暗黑模式 | @nuxtjs/color-mode（class 策略） |
-| 图标 | @nuxt/icon（Phosphor Icons） |
-| 代码高亮 | Shiki（内置于 @nuxt/content） |
+| 层级     | 技术                                   |
+| -------- | -------------------------------------- |
+| 框架     | Nuxt 3（SSR 模式）                     |
+| 内容     | @nuxt/content v2（读取 markdown）      |
+| 样式     | Tailwind CSS + @tailwindcss/typography |
+| 暗黑模式 | @nuxtjs/color-mode（class 策略）       |
+| 图标     | @nuxt/icon（Phosphor Icons）           |
+| 代码高亮 | Shiki（内置于 @nuxt/content）          |
 
 ---
 
@@ -24,7 +24,7 @@
 
 ```
 blog-nuxt/
-├── blog/                    # 符号链接 → ~/Documents/blog（内容仓库）
+├── blog/                    # 符号链接
 │   └── _posts/              # markdown 文章，按分类子目录组织
 ├── assets/css/main.css      # 全局样式 + Shiki 暗黑模式覆盖
 ├── components/
@@ -66,6 +66,7 @@ content: {
 ```
 
 **如果此配置不生效**，备选方案：在项目根目录创建 `content` 软链接：
+
 ```bash
 ln -s blog/_posts content
 ```
@@ -76,10 +77,11 @@ ln -s blog/_posts content
 
 ```yaml
 ---
-title: '文章标题'
-description: '摘要'
+title: "文章标题"
+description: "摘要"
 date: 2024-01-01 12:00:00
-cover: 'https://image.unusebamboo.top/blog/cover/xxx.png'
+updated: 2024-01-01 12:00:00
+cover: "https://image.unusebamboo.top/blog/cover/xxx.png"
 categories:
   - web
 tags:
@@ -93,9 +95,9 @@ tags:
 ## 开发命令
 
 ```bash
-npm install          # 安装依赖
-npm run dev          # 启动开发服务器（默认 3000 端口）
-npm run build        # 构建 SSR 生产包
+pnpm install          # 安装依赖
+pnpm run dev          # 启动开发服务器（默认 3000 端口）
+pnpm run build        # 构建 SSR 生产包
 ```
 
 ## Docker 部署
@@ -114,9 +116,9 @@ make docker-logs
 
 ## 端口
 
-| 环境 | 端口 |
-|------|------|
-| 本地开发 | 3000 |
+| 环境        | 端口 |
+| ----------- | ---- |
+| 本地开发    | 3000 |
 | Docker 对外 | 3016 |
 
 ---
@@ -127,5 +129,3 @@ make docker-logs
 - [ ] 全文搜索（Nuxt Content 内置 `/api/search.json`）
 - [ ] 评论系统（giscus）
 - [ ] 访问统计
-- [ ] RSS Feed
-- [ ] 文章前后篇导航
