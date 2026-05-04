@@ -128,13 +128,13 @@ export default defineNuxtConfig({
   },
 
   appConfig: {
-    siteName: SITE_TITLE,
-    siteTitle: SITE_TITLE,
+    siteName: SITE_TITLE, 
+    siteTitle: "无用之用",
     siteDescription: SITE_DESCRIPTION,
     siteQuote: "Knowledge is simple, practice is difficult.",
     siteSub: "- 知易行难",
     heroBg:
-      "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg-blog.png", // 首页全屏 Banner 背景图，留空则使用渐变
+      "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg.png", // 首页全屏 Banner 背景图，留空则使用渐变
     icpText: "浙ICP备18007284号",
     icpUrl: "https://beian.miit.gov.cn",
     policeText: "",

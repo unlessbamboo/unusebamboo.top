@@ -18,7 +18,7 @@ function toggle() {
     :aria-label="colorMode.value === 'dark' ? '切换到亮色模式' : '切换到暗色模式'"
     @click="toggle"
   >
-    <Icon v-if="colorMode.value === 'dark'" name="ph:sun" class="w-4 h-4" />
-    <Icon v-else name="ph:moon" class="w-4 h-4" />
+    <Icon v-if="colorMode.value === 'dark'" name="ph:sun" class="w-[18px] h-[18px]" />
+    <Icon v-else name="ph:moon" class="w-[18px] h-[18px]" />
   </button>
 </template>
