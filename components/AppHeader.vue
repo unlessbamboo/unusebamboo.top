@@ -67,7 +67,6 @@ const navLinks = [
 
       <!-- 右：图标按钮 -->
       <div class="flex items-center gap-0.5 shrink-0">
-        <CoverModeToggle v-if="route.path.startsWith('/posts/')" />
         <ThemeToggle :light="isHero" />
         <button
           class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"

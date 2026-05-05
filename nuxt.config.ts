@@ -36,7 +36,7 @@ export default defineNuxtConfig({
   ssr: !isDev,
 
   devServer: {
-    host: "0.0.0.0",
+    host: '0.0.0.0',
   },
 
   vite: {
@@ -45,35 +45,26 @@ export default defineNuxtConfig({
           hmr: { host: process.env.NUXT_HMR_HOST ?? getLocalIP() },
           // 重启后提前预热主要页面，避免首次访问卡顿
           warmup: {
-            ssrFiles: ["./pages/index.vue", "./pages/posts/[...slug].vue"],
-            clientFiles: ["./pages/index.vue"],
+            ssrFiles: ['./pages/index.vue', './pages/posts/[...slug].vue'],
+            clientFiles: ['./pages/index.vue'],
           },
         }
       : {},
     // 预打包 shikijs 核心依赖，避免 SSR bundle 每次重建都重新编译语法文件
     optimizeDeps: {
-      include: [
-        "@shikijs/core",
-        "@shikijs/engine-oniguruma",
-        "@shikijs/vscode-textmate",
-      ],
+      include: ['@shikijs/core', '@shikijs/engine-oniguruma', '@shikijs/vscode-textmate'],
     },
   },
 
-  modules: [
-    "@nuxt/content",
-    "@nuxtjs/tailwindcss",
-    "@nuxtjs/color-mode",
-    "@nuxt/icon",
-  ],
+  modules: ['@nuxt/content', '@nuxtjs/tailwindcss', '@nuxtjs/color-mode', '@nuxt/icon'],
 
   icon: {
     // 使用本地 SVG 文件，不依赖外部 CDN 或 npm 包
     fallbackToApi: false,
     customCollections: [
       {
-        prefix: "ph",
-        dir: "./assets/icons/ph",
+        prefix: 'ph',
+        dir: './assets/icons/ph',
       },
     ],
   },
@@ -87,75 +78,86 @@ export default defineNuxtConfig({
     // 直接读取 blog/_posts 目录（blog 是指向内容仓库的符号链接）
     sources: {
       content: {
-        driver: "fs",
-        base: resolve(__dirname, "blog/_posts"),
+        driver: 'fs',
+        base: resolve(__dirname, 'blog/_posts'),
       },
+    },
+    markdown: {
+      toc: { depth: 4, searchDepth: 4 },
     },
     highlight: {
       theme: {
-        default: "vitesse-light",
-        dark: "vitesse-dark",
+        default: 'vitesse-light',
+        dark: 'vitesse-dark',
       },
       // 只保留博客实际使用的语言（统计自 _posts 目录）
       langs: [
-        "sh",
-        "bash",
-        "shell",
-        "python",
-        "ini",
-        "sql",
-        "javascript",
-        "vim",
-        "html",
-        "vue",
-        "json",
-        "c",
-        "lua",
-        "java",
-        "yaml",
-        "xml",
-        "http",
-        "css",
+        'sh',
+        'bash',
+        'shell',
+        'python',
+        'ini',
+        'sql',
+        'javascript',
+        'vim',
+        'html',
+        'vue',
+        'json',
+        'c',
+        'lua',
+        'java',
+        'yaml',
+        'xml',
+        'http',
+        'css',
       ],
     },
   },
 
   colorMode: {
-    classSuffix: "",
-    preference: "system",
-    fallback: "light",
-    storageKey: "blog-color-mode",
+    classSuffix: '',
+    preference: 'system',
+    fallback: 'light',
+    storageKey: 'blog-color-mode',
   },
 
   appConfig: {
-    siteName: SITE_TITLE, 
-    siteTitle: "无用之用",
+    siteName: SITE_TITLE,
+    siteTitle: SITE_TITLE,
     siteDescription: SITE_DESCRIPTION,
-    siteQuote: "Knowledge is simple, practice is difficult.",
-    siteSub: "- 知易行难",
-    heroBg:
-      "https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg.png", // 首页全屏 Banner 背景图，留空则使用渐变
-    icpText: "浙ICP备18007284号",
-    icpUrl: "https://beian.miit.gov.cn",
-    policeText: "",
-    policeCode: "",
-    policeIcon: "",
+    siteQuote: 'Knowledge is simple, practice is difficult.',
+    siteSub: '- 知易行难',
+    heroBg: 'https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bg.png', // 首页全屏 Banner 背景图，留空则使用渐变
+    author: {
+      nickname: SITE_TITLE,
+      avatar: 'https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bamboo-cartoon.png',
+      bio: '宁缓勿躁，宁守勿颓；循序而进，终有所成',
+    },
+    socials: [
+      { name: 'GitHub', icon: 'ph:github-logo', url: 'https://github.com/unusebamboo' },
+      { name: 'Email', icon: 'ph:envelope', url: 'mailto:unlessbamboo@gmail.com' },
+    ],
+    icpText: '浙ICP备18007284号',
+    icpUrl: 'https://beian.miit.gov.cn',
+    policeText: '',
+    policeCode: '',
+    policeIcon: '',
   },
 
   app: {
     head: {
       title: SITE_TITLE,
-      htmlAttrs: { lang: "zh-CN" },
+      htmlAttrs: { lang: 'zh-CN' },
       meta: [
-        { charset: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "description", content: SITE_DESCRIPTION },
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: SITE_DESCRIPTION },
       ],
-      link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
     },
   },
 
-  css: ["~/assets/css/main.css"],
+  css: ['~/assets/css/main.css'],
 
-  compatibilityDate: "2024-11-01",
+  compatibilityDate: '2024-11-01',
 });

@@ -74,7 +74,7 @@ function goPage(p: number) {
 const visiblePages = computed(() => {
   const total = totalPages.value;
   const cur = page.value;
-  const pages: (number | null)[] = [];
+  const pages: number[] = [];
   const add = (n: number) => {
     if (!pages.includes(n)) pages.push(n);
   };

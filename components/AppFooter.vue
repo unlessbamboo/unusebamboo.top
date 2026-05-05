@@ -26,7 +26,7 @@ const archiveLinks = [
         <!-- 左：站点信息 -->
         <div class="flex flex-col gap-1">
           <span class="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
-            {{ logoTitle }}
+            {{ siteName }}
           </span>
           <p class="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
             © {{ new Date().getFullYear() }} {{ logoTitle }} (UselessBamboo). 保留所有权利。

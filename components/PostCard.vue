@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   post: Record<string, any>
+  compact?: boolean
 }>()
 
 const router = useRouter()
@@ -30,7 +31,7 @@ function goTag(e: MouseEvent, tag: string) {
            hover:border-[#cbb99e] dark:hover:border-gray-700
            transition-all duration-200"
   >
-    <NuxtLink :to="`/posts${post._path}`" class="flex flex-col flex-1 p-4">
+    <NuxtLink :to="`/posts${post._path}`" :class="['flex flex-col flex-1', compact ? 'p-3' : 'p-4']">
       <!-- 内容区域：flex-1 自适应填充 -->
       <div class="flex-1 min-h-0 overflow-hidden">
         <!-- 封面图：右上浮动，文字环绕 -->
@@ -38,9 +39,7 @@ function goTag(e: MouseEvent, tag: string) {
           v-if="post.cover"
           :src="post.cover"
           :alt="post.title"
-          class="float-right ml-3 mb-2 w-20 h-20 rounded-lg object-cover
-                 bg-stone-100 dark:bg-gray-800
-                 group-hover:scale-105 transition-transform duration-300"
+          :class="['float-right ml-3 mb-2 rounded-lg object-cover bg-stone-100 dark:bg-gray-800 group-hover:scale-105 transition-transform duration-300', compact ? 'w-14 h-14' : 'w-20 h-20']"
           loading="lazy"
         />
 
@@ -63,7 +62,7 @@ function goTag(e: MouseEvent, tag: string) {
         <!-- 描述：多余内容截断 -->
         <p
           v-if="post.description"
-          class="text-sm text-stone-500 dark:text-stone-400 leading-relaxed line-clamp-4 mt-1"
+          :class="['text-sm text-stone-500 dark:text-stone-400 leading-relaxed mt-1', compact ? 'line-clamp-2' : 'line-clamp-4']"
         >
           {{ post.description }}
         </p>

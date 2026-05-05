@@ -5,7 +5,7 @@
     <!-- 两侧流动水波 -->
     <SideWaterFlow />
     <AppHeader />
-    <main class="flex-1 container mx-auto px-4 py-10 max-w-5xl w-full">
+    <main class="flex-1 container mx-auto px-4 py-10 max-w-6xl w-full">
       <slot />
     </main>
     <AppFooter />
