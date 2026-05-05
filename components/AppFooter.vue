@@ -19,7 +19,7 @@ const archiveLinks = [
 </script>
 
 <template>
-  <footer class="border-t border-stone-200 dark:border-gray-800 mt-16 bg-[#f0ede8] dark:bg-gray-900">
+  <footer>
     <div class="container mx-auto px-6 max-w-6xl py-5">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
 

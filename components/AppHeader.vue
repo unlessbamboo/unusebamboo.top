@@ -8,13 +8,12 @@ const logoRest = computed(() => logoTitle.slice(1));
 const isHome = computed(() => route.path === "/");
 const heroVisible = useHeroVisible();
 
-// 首页 hero 展示时用透明玻璃；hero 消失后或其他页面用暖米白/深色背景
+// hero 展示时浮于全屏 hero 之上（fixed + 透明）；其他情况让外层卡片做容器
 const headerBg = computed(() => {
   if (isHome.value && heroVisible.value) {
-    // hero 背景图偏暗，亮色用白色玻璃，暗色用黑色玻璃
     return 'fixed top-0 left-0 right-0 bg-transparent';
   }
-  return 'sticky top-0 border-b border-[#e5ddd0] dark:border-gray-800 bg-[#f7f4ef]/95 dark:bg-gray-900/95 backdrop-blur-sm';
+  return '';
 });
 
 const isHero = computed(() => isHome.value && heroVisible.value);

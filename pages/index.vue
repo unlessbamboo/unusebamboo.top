@@ -173,10 +173,10 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <!-- 全屏 Banner -->
+    <!-- 全屏 Banner（plan A：fixed 脱离布局占满视口；z-40 让 header z-50 仍能浮在其上） -->
     <section
       v-if="heroVisible"
-      class="hero-section relative w-full h-screen overflow-hidden cursor-pointer transition-opacity duration-300"
+      class="hero-section fixed inset-0 z-40 w-screen h-screen overflow-hidden cursor-pointer transition-opacity duration-300"
       :class="heroHiding ? 'opacity-0' : 'opacity-100'"
       @click="dismissHero"
       @wheel="onHeroWheel"
@@ -223,8 +223,8 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- 内容区域：hero 消失后加 pt-16 避免被固定导航栏遮挡 -->
-    <div class="container mx-auto px-4 py-10 max-w-6xl w-full" :class="{ 'pt-20': !heroVisible }">
+    <!-- 内容区域：宽度/内边距由 layout 的中间卡片提供 -->
+    <div class="w-full">
       <!-- 内容区域：左侧简介 + 右侧上下轮播 -->
       <div class="mb-10 pb-8 border-b border-gray-200 dark:border-gray-800">
         <div class="flex flex-col md:flex-row md:items-stretch gap-8">

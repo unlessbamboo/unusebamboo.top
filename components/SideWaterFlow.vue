@@ -1,300 +1,200 @@
+<script setup lang="ts">
+const { heroBg } = useAppConfig()
+defineProps<{ side: 'left' | 'right' }>()
+
+type Weather = 'sunny' | 'rainy' | 'misty' | 'cloudy'
+
+const presets: Record<Weather, { filter: string; overlay: 'none' | 'rain' | 'mist' }> = {
+  sunny:  { filter: 'brightness(1.12) saturate(1.15) contrast(1.05) hue-rotate(-5deg)',        overlay: 'none' },
+  rainy:  { filter: 'brightness(0.72) saturate(0.55) contrast(0.88) hue-rotate(10deg)',        overlay: 'rain' },
+  misty:  { filter: 'brightness(0.88) saturate(0.28) contrast(0.65) blur(3px)',                overlay: 'mist' },
+  cloudy: { filter: 'brightness(0.82) saturate(0.38) contrast(0.82)',                          overlay: 'none' },
+}
+
+const weatherKeys = Object.keys(presets) as Weather[]
+const currentW = ref<Weather>('sunny')
+const filterStyle = ref(presets.sunny.filter)
+const activeOverlay = ref<'none' | 'rain' | 'mist'>('none')
+
+let timer: ReturnType<typeof setTimeout> | null = null
+
+function pickNext(): Weather {
+  let w: Weather
+  do { w = weatherKeys[Math.floor(Math.random() * weatherKeys.length)] }
+  while (w === currentW.value)
+  return w
+}
+
+function scheduleNext() {
+  timer = setTimeout(() => {
+    const next = pickNext()
+    filterStyle.value = presets[next].filter
+
+    // 15 秒过渡期间 overlay 不变（不然先换 overlay 再换背景会不匹配）
+    setTimeout(() => {
+      currentW.value = next
+      activeOverlay.value = presets[next].overlay
+      scheduleNext()
+    }, 15000)
+  }, 60000)
+}
+
+onMounted(() => { scheduleNext() })
+onUnmounted(() => { if (timer) clearTimeout(timer) })
+
+/* ── 雨滴数据 ────────────────────────────────────── */
+const raindrops = Array.from({ length: 60 }, () => ({
+  left: `${Math.random() * 100}%`,
+  delay: `${Math.random() * 4}s`,
+  dur: `${0.5 + Math.random() * 1.0}s`,
+  w: `${0.8 + Math.random() * 1.8}px`,
+  h: `${6 + Math.random() * 16}px`,
+  o: 0.2 + Math.random() * 0.4,
+  r: `${-2 + Math.random() * 4}deg`,
+}))
+</script>
+
 <template>
-  <div class="side-water" aria-hidden="true">
-    <!-- 左侧 -->
-    <div class="side-water__panel side-water__panel--left">
-      <!-- 深色模式 banner 同款渐变底 -->
-      <div class="side-water__sky"></div>
-      <!-- 星点：用 slice 模式保持圆形不被拉伸 -->
-      <svg
-        class="side-water__stars"
-        viewBox="0 0 100 600"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <!-- 小星 -->
-        <circle class="star star--s d1" cx="18" cy="25" r="0.35" />
-        <circle class="star star--s d2" cx="62" cy="48" r="0.4" />
-        <circle class="star star--s d3" cx="35" cy="80" r="0.3" />
-        <circle class="star star--s d1" cx="80" cy="110" r="0.35" />
-        <circle class="star star--s d2" cx="22" cy="145" r="0.4" />
-        <circle class="star star--s d3" cx="55" cy="175" r="0.3" />
-        <circle class="star star--s d1" cx="88" cy="210" r="0.35" />
-        <circle class="star star--s d2" cx="12" cy="245" r="0.3" />
-        <circle class="star star--s d3" cx="48" cy="280" r="0.4" />
-        <circle class="star star--s d1" cx="72" cy="315" r="0.3" />
-        <circle class="star star--s d2" cx="28" cy="350" r="0.35" />
-        <circle class="star star--s d3" cx="65" cy="390" r="0.4" />
-        <circle class="star star--s d1" cx="15" cy="425" r="0.3" />
-        <circle class="star star--s d2" cx="82" cy="460" r="0.35" />
-        <circle class="star star--s d3" cx="42" cy="495" r="0.4" />
-        <circle class="star star--s d1" cx="58" cy="535" r="0.3" />
-        <circle class="star star--s d2" cx="25" cy="570" r="0.35" />
-        <!-- 中星 -->
-        <circle class="star star--m d2" cx="50" cy="40" r="0.7" />
-        <circle class="star star--m d3" cx="78" cy="155" r="0.65" />
-        <circle class="star star--m d1" cx="20" cy="265" r="0.7" />
-        <circle class="star star--m d2" cx="62" cy="370" r="0.75" />
-        <circle class="star star--m d3" cx="32" cy="455" r="0.65" />
-        <circle class="star star--m d1" cx="75" cy="540" r="0.7" />
-        <!-- 大星（带辉光） -->
-        <circle class="star star--l d3" cx="40" cy="120" r="1.1" />
-        <circle class="star star--l d1" cx="68" cy="300" r="1.0" />
-        <circle class="star star--l d2" cx="28" cy="500" r="1.2" />
-      </svg>
-      <!-- 水流 -->
-      <svg
-        class="side-water__svg"
-        viewBox="0 0 100 800"
-        preserveAspectRatio="none"
-      >
-        <path class="stream stream-1" d="M50 -20 C 30 100, 70 220, 50 340 S 30 580, 50 820" />
-        <path class="stream stream-2" d="M30 -20 C 60 120, 10 260, 40 400 S 70 640, 30 820" />
-        <path class="stream stream-3" d="M70 -20 C 40 140, 90 280, 60 420 S 20 660, 70 820" />
-        <path class="stream stream-4" d="M20 -20 C 80 100, 20 240, 80 380 S 20 620, 60 820" />
-      </svg>
+  <div :class="['side-water', `side-water--${side}`]" aria-hidden="true">
+    <!-- 背景图 + filter 缓慢过渡 -->
+    <div
+      v-if="heroBg"
+      class="side-water__bg"
+      :style="`background-image: url('${heroBg}')`"
+    ></div>
+
+    <!-- 调色层（深色模式 + 轻微 mood 压暗） -->
+    <div class="side-water__tint"></div>
+
+    <!-- ── 雨滴 ────────────────────────────────── -->
+    <div v-if="activeOverlay === 'rain'" class="rain-layer">
+      <div
+        v-for="(d, i) in raindrops"
+        :key="i"
+        class="raindrop"
+        :style="{
+          left: d.left,
+          width: d.w,
+          height: d.h,
+          opacity: d.o,
+          animationDuration: d.dur,
+          animationDelay: d.delay,
+          transform: `rotate(${d.r})`,
+        }"
+      />
     </div>
 
-    <!-- 右侧 -->
-    <div class="side-water__panel side-water__panel--right">
-      <div class="side-water__sky"></div>
-      <svg
-        class="side-water__stars"
-        viewBox="0 0 100 600"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <!-- 右侧用不同坐标错开，避免左右镜像感 -->
-        <circle class="star star--s d2" cx="30" cy="18" r="0.35" />
-        <circle class="star star--s d3" cx="72" cy="55" r="0.4" />
-        <circle class="star star--s d1" cx="15" cy="92" r="0.3" />
-        <circle class="star star--s d2" cx="58" cy="125" r="0.4" />
-        <circle class="star star--s d3" cx="85" cy="160" r="0.3" />
-        <circle class="star star--s d1" cx="38" cy="195" r="0.35" />
-        <circle class="star star--s d2" cx="68" cy="232" r="0.4" />
-        <circle class="star star--s d3" cx="22" cy="268" r="0.3" />
-        <circle class="star star--s d1" cx="80" cy="305" r="0.35" />
-        <circle class="star star--s d2" cx="45" cy="340" r="0.4" />
-        <circle class="star star--s d3" cx="18" cy="378" r="0.3" />
-        <circle class="star star--s d1" cx="62" cy="412" r="0.35" />
-        <circle class="star star--s d2" cx="88" cy="445" r="0.4" />
-        <circle class="star star--s d3" cx="32" cy="480" r="0.3" />
-        <circle class="star star--s d1" cx="70" cy="518" r="0.35" />
-        <circle class="star star--s d2" cx="20" cy="552" r="0.4" />
-        <circle class="star star--s d3" cx="52" cy="585" r="0.3" />
-        <!-- 中星 -->
-        <circle class="star star--m d3" cx="55" cy="75" r="0.7" />
-        <circle class="star star--m d1" cx="25" cy="190" r="0.65" />
-        <circle class="star star--m d2" cx="78" cy="290" r="0.75" />
-        <circle class="star star--m d3" cx="42" cy="395" r="0.7" />
-        <circle class="star star--m d1" cx="68" cy="478" r="0.65" />
-        <circle class="star star--m d2" cx="22" cy="560" r="0.7" />
-        <!-- 大星 -->
-        <circle class="star star--l d1" cx="65" cy="135" r="1.1" />
-        <circle class="star star--l d2" cx="35" cy="325" r="1.2" />
-        <circle class="star star--l d3" cx="72" cy="510" r="1.0" />
-      </svg>
-      <svg
-        class="side-water__svg"
-        viewBox="0 0 100 800"
-        preserveAspectRatio="none"
-      >
-        <path class="stream stream-1" d="M50 -20 C 70 100, 30 220, 50 340 S 70 580, 50 820" />
-        <path class="stream stream-2" d="M70 -20 C 40 120, 90 260, 60 400 S 30 640, 70 820" />
-        <path class="stream stream-3" d="M30 -20 C 60 140, 10 280, 40 420 S 80 660, 30 820" />
-        <path class="stream stream-4" d="M80 -20 C 20 100, 80 240, 20 380 S 80 620, 40 820" />
-      </svg>
+    <!-- ── 雾气 ────────────────────────────────── -->
+    <div v-if="activeOverlay === 'mist'" class="mist-layer">
+      <div class="mist mist--1"></div>
+      <div class="mist mist--2"></div>
+      <div class="mist mist--3"></div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .side-water {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  /* 内容容器 max-w-6xl = 72rem，xl 断点以下隐藏 */
-  display: none;
-}
-
-@media (min-width: 1280px) {
-  .side-water {
-    display: block;
-  }
-}
-
-.side-water__panel {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  /* 内容区两侧的空白宽度，留 1rem 安全间距 */
-  width: calc((100vw - 72rem) / 2 - 1rem);
-  overflow: hidden;
-  /* 顶/底渐变淡出，避免硬边 */
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
-}
-
-.side-water__panel--left {
-  left: 0;
-}
-.side-water__panel--right {
-  right: 0;
-}
-
-/* ── 星空底色（banner 同款 #0f2027 → #203a43 → #2c5364） ── */
-.side-water__sky {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  /* 浅色模式：极淡的冷色，避免与米色 body 冲突 */
-  background: linear-gradient(
-    180deg,
-    rgba(15, 32, 39, 0.04) 0%,
-    rgba(32, 58, 67, 0.07) 50%,
-    rgba(44, 83, 100, 0.09) 100%
-  );
-}
-
-:global(.dark) .side-water__sky {
-  background: linear-gradient(
-    180deg,
-    rgba(15, 32, 39, 0.65) 0%,
-    rgba(32, 58, 67, 0.55) 50%,
-    rgba(44, 83, 100, 0.45) 100%
-  );
-}
-
-.side-water__stars,
-.side-water__svg {
-  position: absolute;
-  inset: 0;
+  position: relative;
   width: 100%;
   height: 100%;
-  display: block;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.side-water__stars {
+/* ── 背景层 + filter 过渡 ──────────────────────────── */
+.side-water__bg {
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  z-index: 0;
+  opacity: 0.95;
+  /* filter 缓慢过渡：15 秒跨 60 秒间隔 */
+  transition: filter 15s ease-in-out;
+}
+.side-water--left  .side-water__bg { left: 0; background-position: left center; }
+.side-water--right .side-water__bg { right: 0; background-position: right center; }
+
+:global(.dark) .side-water__bg { opacity: 0.85; }
+
+/* ── 调色层 ────────────────────────────────────────── */
+.side-water__tint {
+  position: absolute;
+  inset: 0;
   z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.04) 100%);
+}
+:global(.dark) .side-water__tint {
+  background: linear-gradient(180deg, rgba(15,32,39,0.20) 0%, rgba(20,40,50,0.15) 100%);
 }
 
-.side-water__svg {
+/* ── 雨滴 ──────────────────────────────────────────── */
+.rain-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+}
+.raindrop {
+  position: absolute;
+  top: -20px;
+  border-radius: 1px 1px 50% 50%;
+  background: linear-gradient(to bottom, rgba(175,200,235,0.65) 0%, transparent 100%);
+  animation: raindropFall linear infinite;
+}
+:global(.dark) .raindrop {
+  background: linear-gradient(to bottom, rgba(190,215,245,0.75) 0%, transparent 100%);
+}
+@keyframes raindropFall {
+  0%   { transform: translateY(-20px); opacity: 0; }
+  8%   { opacity: 1; }
+  85%  { opacity: 0.8; }
+  100% { transform: translateY(calc(100vh + 20px)); opacity: 0; }
+}
+
+/* ── 雾气 ──────────────────────────────────────────── */
+.mist-layer {
+  position: absolute;
+  inset: 0;
   z-index: 2;
 }
+.mist {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  will-change: transform, opacity;
+}
+.mist--1 {
+  width: 130%; height: 55%; top: 5%; left: -15%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,200,215,0.13) 0%, transparent 55%);
+  animation: mistDrift 22s ease-in-out infinite alternate;
+}
+.mist--2 {
+  width: 110%; height: 45%; bottom: 10%; right: -10%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(190,195,215,0.10) 0%, transparent 55%);
+  animation: mistDrift 28s ease-in-out infinite alternate-reverse;
+}
+.mist--3 {
+  width: 140%; height: 35%; top: 55%; left: -20%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(205,200,215,0.08) 0%, transparent 50%);
+  animation: mistDrift 35s ease-in-out infinite alternate;
+}
+:global(.dark) .mist--1 { background: radial-gradient(ellipse at 50% 50%, rgba(150,175,210,0.16) 0%, transparent 55%); }
+:global(.dark) .mist--2 { background: radial-gradient(ellipse at 50% 50%, rgba(140,165,200,0.12) 0%, transparent 55%); }
+:global(.dark) .mist--3 { background: radial-gradient(ellipse at 50% 50%, rgba(150,175,205,0.10) 0%, transparent 50%); }
 
-/* ── 星点 ───────────────────────────────────────────── */
-.star {
-  /* 浅色模式：偏冷色调的灰蓝，与 banner 配色呼应 */
-  fill: rgb(60, 90, 120);
-  opacity: 0.55;
-}
-
-.star--m {
-  fill: rgb(45, 75, 105);
-  opacity: 0.7;
-}
-
-.star--l {
-  fill: rgb(35, 65, 95);
-  opacity: 0.8;
-  /* 大星辉光 */
-  filter: drop-shadow(0 0 1.2px rgba(60, 100, 140, 0.6));
-}
-
-/* 暗色模式：亮白偏冷 */
-:global(.dark) .star {
-  fill: rgb(210, 225, 245);
-  opacity: 0.75;
-}
-:global(.dark) .star--m {
-  fill: rgb(225, 235, 250);
-  opacity: 0.9;
-}
-:global(.dark) .star--l {
-  fill: rgb(240, 248, 255);
-  opacity: 1;
-  filter: drop-shadow(0 0 1.5px rgba(180, 210, 240, 0.9));
+@keyframes mistDrift {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  50%  { transform: translate(4%, -2%) scale(1.1); opacity: 0.85; }
+  100% { transform: translate(-3%, 2%) scale(0.92); opacity: 0.6; }
 }
 
-/* 三组错相位的闪烁动画 */
-.star.d1 { animation: twinkle 4.2s ease-in-out infinite; }
-.star.d2 { animation: twinkle 5.6s ease-in-out infinite -1.4s; }
-.star.d3 { animation: twinkle 7.3s ease-in-out infinite -3.0s; }
-
-@keyframes twinkle {
-  0%, 100% { opacity: var(--star-op, 0.55); }
-  50%      { opacity: 0.2; }
-}
-
-/* 通过 CSS var 让动画峰值 = 各档默认透明度 */
-.star    { --star-op: 0.55; }
-.star--m { --star-op: 0.7; }
-.star--l { --star-op: 0.85; }
-:global(.dark) .star    { --star-op: 0.75; }
-:global(.dark) .star--m { --star-op: 0.9; }
-:global(.dark) .star--l { --star-op: 1; }
-
-/* ── 水流线条 ───────────────────────────────────────────── */
-.stream {
-  fill: none;
-  stroke: rgba(80, 130, 180, 0.28);
-  stroke-linecap: round;
-  /* 长虚线 + 大间隔，配合 dashoffset 动画 = 水流向下流动 */
-  stroke-dasharray: 60 220;
-  animation: streamFlow linear infinite;
-}
-
-/* 每条线粗细、速度、透明度、相位错开 */
-.stream-1 {
-  stroke-width: 1.2;
-  stroke: rgba(96, 145, 195, 0.32);
-  animation-duration: 5.5s;
-  animation-delay: 0s;
-}
-.stream-2 {
-  stroke-width: 0.8;
-  stroke: rgba(110, 165, 210, 0.22);
-  animation-duration: 7.5s;
-  animation-delay: -1.8s;
-  stroke-dasharray: 40 260;
-}
-.stream-3 {
-  stroke-width: 0.6;
-  stroke: rgba(130, 180, 220, 0.18);
-  animation-duration: 9s;
-  animation-delay: -3.4s;
-  stroke-dasharray: 30 300;
-}
-.stream-4 {
-  stroke-width: 1;
-  stroke: rgba(85, 140, 190, 0.20);
-  animation-duration: 6.2s;
-  animation-delay: -4.2s;
-  stroke-dasharray: 80 200;
-}
-
-/* 暗色模式：更亮一些以便在深底上突出 */
-:global(.dark) .stream-1 {
-  stroke: rgba(140, 190, 235, 0.45);
-}
-:global(.dark) .stream-2 {
-  stroke: rgba(120, 175, 220, 0.35);
-}
-:global(.dark) .stream-3 {
-  stroke: rgba(155, 200, 235, 0.28);
-}
-:global(.dark) .stream-4 {
-  stroke: rgba(130, 180, 225, 0.32);
-}
-
-@keyframes streamFlow {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -280; }
-}
-
-/* 用户偏好减少动效时关闭流动与闪烁 */
 @media (prefers-reduced-motion: reduce) {
-  .stream,
-  .star {
-    animation: none;
-  }
+  .raindrop, .mist { animation: none !important; }
+  .side-water__bg { transition: none !important; }
 }
 </style>
