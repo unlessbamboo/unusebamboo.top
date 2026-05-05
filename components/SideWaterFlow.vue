@@ -1,48 +1,88 @@
 <script setup lang="ts">
-const { heroBg } = useAppConfig()
 defineProps<{ side: 'left' | 'right' }>()
 
-type Weather = 'sunny' | 'rainy' | 'misty' | 'cloudy'
+const BASE = 'https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bgslide/'
 
-const presets: Record<Weather, { filter: string; overlay: 'none' | 'rain' | 'mist' }> = {
-  sunny:  { filter: 'brightness(1.12) saturate(1.15) contrast(1.05) hue-rotate(-5deg)',        overlay: 'none' },
-  rainy:  { filter: 'brightness(0.72) saturate(0.55) contrast(0.88) hue-rotate(10deg)',        overlay: 'rain' },
-  misty:  { filter: 'brightness(0.88) saturate(0.28) contrast(0.65) blur(3px)',                overlay: 'mist' },
-  cloudy: { filter: 'brightness(0.82) saturate(0.38) contrast(0.82)',                          overlay: 'none' },
+/* ── 构建播放列表 ──────────────────────────────────── */
+interface Slide {
+  file: string
+  overlay: 'none' | 'rain' | 'mist'
 }
 
-const weatherKeys = Object.keys(presets) as Weather[]
-const currentW = ref<Weather>('sunny')
-const filterStyle = ref(presets.sunny.filter)
-const activeOverlay = ref<'none' | 'rain' | 'mist'>('none')
+const seasons: Slide[] = [
+  { file: 'bg_spring.png', overlay: 'none' },
+  { file: 'bg_summer.png', overlay: 'none' },
+  { file: 'bg_autumn.png', overlay: 'none' },
+  { file: 'bg_winter.png', overlay: 'none' },
+]
+
+const weathers: Slide[] = [
+  { file: 'bg_rainy.png', overlay: 'rain' },
+  { file: 'bg_foggy.png', overlay: 'mist' },
+]
+
+function buildPlaylist(): Slide[] {
+  const list: Slide[] = []
+  for (const season of seasons) {
+    list.push(season)
+    // 春夏季节穿插雨雾天气
+    if (season.file.includes('spring') || season.file.includes('summer')) {
+      const count = Math.random() < 0.6 ? (Math.random() < 0.25 ? 2 : 1) : 0
+      const used: string[] = []
+      for (let i = 0; i < count; i++) {
+        const pool = weathers.filter((w) => !used.includes(w.file))
+        if (!pool.length) break
+        const pick = pool[Math.floor(Math.random() * pool.length)]
+        used.push(pick.file)
+        list.push(pick)
+      }
+    }
+  }
+  return list
+}
+
+const playlist = buildPlaylist()
+let playIdx = 0
+
+/* ── 跨帧渐隐渐现（两层叠化） ───────────────────────── */
+const frontImg = ref(BASE + playlist[0].file)
+const backImg = ref('')
+const showFront = ref(true)
+const overlay = ref(playlist[0].overlay)
 
 let timer: ReturnType<typeof setTimeout> | null = null
 
-function pickNext(): Weather {
-  let w: Weather
-  do { w = weatherKeys[Math.floor(Math.random() * weatherKeys.length)] }
-  while (w === currentW.value)
-  return w
+function advance() {
+  playIdx = (playIdx + 1) % playlist.length
+  const next = playlist[playIdx]
+
+  // 新图写入 back 层（opacity 0 → 等待一帧 → 渐入）
+  backImg.value = BASE + next.file
+
+  // setTimeout 50ms 确保 back 层以 opacity 0 渲染到 DOM
+  setTimeout(() => {
+    // 触发叠化：front 渐出、back 渐入（均由 CSS transition 驱动）
+    showFront.value = false
+
+    // 15 秒叠化完成后交换图层
+    setTimeout(() => {
+      frontImg.value = backImg.value
+      backImg.value = ''
+      showFront.value = true
+      overlay.value = next.overlay
+      scheduleNext()
+    }, 15000)
+  }, 50)
 }
 
 function scheduleNext() {
-  timer = setTimeout(() => {
-    const next = pickNext()
-    filterStyle.value = presets[next].filter
-
-    // 15 秒过渡期间 overlay 不变（不然先换 overlay 再换背景会不匹配）
-    setTimeout(() => {
-      currentW.value = next
-      activeOverlay.value = presets[next].overlay
-      scheduleNext()
-    }, 15000)
-  }, 60000)
+  timer = setTimeout(advance, 60000)
 }
 
 onMounted(() => { scheduleNext() })
 onUnmounted(() => { if (timer) clearTimeout(timer) })
 
-/* ── 雨滴数据 ────────────────────────────────────── */
+/* ── 雨滴数据 ──────────────────────────────────────── */
 const raindrops = Array.from({ length: 60 }, () => ({
   left: `${Math.random() * 100}%`,
   delay: `${Math.random() * 4}s`,
@@ -56,36 +96,39 @@ const raindrops = Array.from({ length: 60 }, () => ({
 
 <template>
   <div :class="['side-water', `side-water--${side}`]" aria-hidden="true">
-    <!-- 背景图 + filter 缓慢过渡 -->
-    <div
-      v-if="heroBg"
-      class="side-water__bg"
-      :style="`background-image: url('${heroBg}')`"
-    ></div>
+    <!-- ── 叠化层 ────────────────────────────────── -->
+    <div class="img-stack">
+      <div
+        class="slide-img"
+        :style="{ backgroundImage: `url('${frontImg}')` }"
+        :class="{ hide: !showFront }"
+      ></div>
+      <div
+        class="slide-img"
+        :style="{ backgroundImage: `url('${backImg}')` }"
+        :class="{ hide: showFront }"
+      ></div>
+    </div>
 
-    <!-- 调色层（深色模式 + 轻微 mood 压暗） -->
+    <!-- 调色层 -->
     <div class="side-water__tint"></div>
 
     <!-- ── 雨滴 ────────────────────────────────── -->
-    <div v-if="activeOverlay === 'rain'" class="rain-layer">
+    <div v-if="overlay === 'rain'" class="rain-layer">
       <div
         v-for="(d, i) in raindrops"
         :key="i"
         class="raindrop"
         :style="{
-          left: d.left,
-          width: d.w,
-          height: d.h,
-          opacity: d.o,
-          animationDuration: d.dur,
-          animationDelay: d.delay,
+          left: d.left, width: d.w, height: d.h, opacity: d.o,
+          animationDuration: d.dur, animationDelay: d.delay,
           transform: `rotate(${d.r})`,
         }"
       />
     </div>
 
     <!-- ── 雾气 ────────────────────────────────── -->
-    <div v-if="activeOverlay === 'mist'" class="mist-layer">
+    <div v-if="overlay === 'mist'" class="mist-layer">
       <div class="mist mist--1"></div>
       <div class="mist mist--2"></div>
       <div class="mist mist--3"></div>
@@ -102,23 +145,25 @@ const raindrops = Array.from({ length: 60 }, () => ({
   pointer-events: none;
 }
 
-/* ── 背景层 + filter 过渡 ──────────────────────────── */
-.side-water__bg {
+/* ── 图片叠化层 ────────────────────────────────────── */
+.img-stack {
   position: absolute;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  z-index: 0;
+}
+
+.slide-img {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-repeat: no-repeat;
-  z-index: 0;
-  opacity: 0.95;
-  /* filter 缓慢过渡：15 秒跨 60 秒间隔 */
-  transition: filter 15s ease-in-out;
+  opacity: 1;
+  transition: opacity 15s ease-in-out;
 }
-.side-water--left  .side-water__bg { left: 0; background-position: left center; }
-.side-water--right .side-water__bg { right: 0; background-position: right center; }
+.slide-img.hide { opacity: 0; }
 
-:global(.dark) .side-water__bg { opacity: 0.85; }
+.side-water--left  .slide-img { background-position: left center; }
+.side-water--right .slide-img { background-position: right center; }
 
 /* ── 调色层 ────────────────────────────────────────── */
 .side-water__tint {
@@ -195,6 +240,6 @@ const raindrops = Array.from({ length: 60 }, () => ({
 
 @media (prefers-reduced-motion: reduce) {
   .raindrop, .mist { animation: none !important; }
-  .side-water__bg { transition: none !important; }
+  .slide-img { transition: none !important; }
 }
 </style>
