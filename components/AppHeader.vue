@@ -19,7 +19,8 @@ const headerBg = computed(() => {
 const isHero = computed(() => isHome.value && heroVisible.value);
 
 function navClass(path: string) {
-  const active = route.path === path;
+  const active = route.path === path
+    || (path === '/tags' && (route.path.startsWith('/tags') || route.path.startsWith('/categories')));
   if (isHero.value) {
     return active
       ? 'text-white font-bold'
@@ -31,10 +32,9 @@ function navClass(path: string) {
 }
 
 const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "Categories", path: "/categories" },
-  { name: "Tags", path: "/tags" },
-  { name: "About", path: "/about" },
+  { name: "首页", path: "/" },
+  { name: "分类&标签", path: "/tags" },
+  { name: "关于", path: "/about" },
 ];
 </script>
 
