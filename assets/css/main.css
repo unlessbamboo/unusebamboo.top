@@ -110,7 +110,7 @@ pre code span {
 }
 
 pre {
-  @apply rounded-xl overflow-x-auto my-6;
+  @apply overflow-x-auto;
 }
 
 /* 文章内容滚动条美化 */

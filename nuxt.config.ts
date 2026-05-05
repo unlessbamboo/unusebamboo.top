@@ -87,8 +87,8 @@ export default defineNuxtConfig({
     },
     highlight: {
       theme: {
-        default: 'vitesse-light',
-        dark: 'vitesse-dark',
+        default: 'catppuccin-latte',
+        dark: 'catppuccin-mocha',
       },
       // 只保留博客实际使用的语言（统计自 _posts 目录）
       langs: [
