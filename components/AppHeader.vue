@@ -40,7 +40,7 @@ const navLinks = [
 
 <template>
   <header :class="['z-50 transition-all duration-300', headerBg]">
-    <div class="container mx-auto px-6 max-w-6xl h-16 flex items-center">
+    <div class="container mx-auto px-4 max-w-6xl h-16 flex items-center">
       <!-- 左：Logo -->
       <NuxtLink
         to="/"

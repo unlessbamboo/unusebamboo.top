@@ -1,82 +1,99 @@
 <script setup lang="ts">
-defineProps<{ side: 'left' | 'right' }>()
+const props = defineProps<{ side: 'left' | 'right' }>()
 
 const BASE = 'https://unusebamboo.oss-cn-shanghai.aliyuncs.com/bamboo/bgslide/'
 
 /* ── 构建播放列表 ──────────────────────────────────── */
 interface Slide {
-  file: string
+  name: string
   overlay: 'none' | 'rain' | 'mist'
 }
 
+function url(slide: Slide) {
+  return `${BASE}${slide.name}_${props.side}.png`
+}
+
+const begin: Slide = { name: 'bg_begin', overlay: 'none' }
+
 const seasons: Slide[] = [
-  { file: 'bg_spring.png', overlay: 'none' },
-  { file: 'bg_summer.png', overlay: 'none' },
-  { file: 'bg_autumn.png', overlay: 'none' },
-  { file: 'bg_winter.png', overlay: 'none' },
+  { name: 'bg_spring', overlay: 'none' },
+  { name: 'bg_summer', overlay: 'none' },
+  { name: 'bg_autumn', overlay: 'none' },
+  { name: 'bg_winter', overlay: 'none' },
 ]
 
 const weathers: Slide[] = [
-  { file: 'bg_rainy.png', overlay: 'rain' },
-  { file: 'bg_foggy.png', overlay: 'mist' },
+  { name: 'bg_rainy', overlay: 'rain' },
+  { name: 'bg_foggy', overlay: 'mist' },
 ]
 
 function buildPlaylist(): Slide[] {
   const list: Slide[] = []
-  for (const season of seasons) {
-    list.push(season)
-    // 春夏季节穿插雨雾天气
-    if (season.file.includes('spring') || season.file.includes('summer')) {
-      const count = Math.random() < 0.6 ? (Math.random() < 0.25 ? 2 : 1) : 0
-      const used: string[] = []
-      for (let i = 0; i < count; i++) {
-        const pool = weathers.filter((w) => !used.includes(w.file))
-        if (!pool.length) break
-        const pick = pool[Math.floor(Math.random() * pool.length)]
-        used.push(pick.file)
-        list.push(pick)
-      }
-    }
+  const used = new Set<string>()
+
+  const tryAppendWeather = () => {
+    if (Math.random() >= 0.6) return
+    const pool = weathers.filter(w => !used.has(w.name))
+    if (!pool.length) return
+    const pick = pool[Math.floor(Math.random() * pool.length)]
+    used.add(pick.name)
+    list.push(pick)
   }
+
+  list.push(begin)
+  tryAppendWeather()
+  list.push(seasons[0]) // spring
+  tryAppendWeather()
+  list.push(seasons[1]) // summer
+  tryAppendWeather()
+  list.push(seasons[2]) // autumn
+  list.push(seasons[3]) // winter
   return list
 }
 
 const playlist = buildPlaylist()
 let playIdx = 0
 
-/* ── 跨帧渐隐渐现（两层叠化） ───────────────────────── */
-const frontImg = ref(BASE + playlist[0].file)
-const backImg = ref('')
-const showFront = ref(true)
-const overlay = ref(playlist[0].overlay)
+const FADE_MS = 5000
+
+/* ── A/B 双槽叠化，永不清空图层 ────────────────────── */
+const imgA = ref(url(playlist[0]))
+const imgB = ref('')
+const aIsActive = ref(true)
+const overlay = ref<'none' | 'rain' | 'mist'>(playlist[0].overlay)
 
 let timer: ReturnType<typeof setTimeout> | null = null
 
 function advance() {
   playIdx = (playIdx + 1) % playlist.length
   const next = playlist[playIdx]
+  const nextUrl = url(next)
 
-  // 新图写入 back 层（opacity 0 → 等待一帧 → 渐入）
-  backImg.value = BASE + next.file
+  // 预加载图片，加载完成后再触发渐变，避免灰屏
+  const onReady = () => {
+    if (aIsActive.value) imgB.value = nextUrl
+    else imgA.value = nextUrl
 
-  // setTimeout 50ms 确保 back 层以 opacity 0 渲染到 DOM
-  setTimeout(() => {
-    // 触发叠化：front 渐出、back 渐入（均由 CSS transition 驱动）
-    showFront.value = false
+    nextTick(() => {
+      // 离开 bg_rainy 时立即停止雨滴，不等渐变结束
+      if (overlay.value === 'rain') overlay.value = 'none'
+      aIsActive.value = !aIsActive.value
+      // 渐变完成后更新 overlay 并调度下一帧
+      setTimeout(() => {
+        overlay.value = next.overlay
+        scheduleNext()
+      }, FADE_MS)
+    })
+  }
 
-    // 15 秒叠化完成后交换图层
-    setTimeout(() => {
-      frontImg.value = backImg.value
-      backImg.value = ''
-      showFront.value = true
-      overlay.value = next.overlay
-      scheduleNext()
-    }, 15000)
-  }, 50)
+  const img = new Image()
+  img.onload = onReady
+  img.onerror = onReady
+  img.src = nextUrl
 }
 
 function scheduleNext() {
-  timer = setTimeout(advance, 60000)
+  timer = setTimeout(advance, 20000 + Math.random() * 20000)
 }
 
 onMounted(() => { scheduleNext() })
@@ -100,13 +117,13 @@ const raindrops = Array.from({ length: 60 }, () => ({
     <div class="img-stack">
       <div
         class="slide-img"
-        :style="{ backgroundImage: `url('${frontImg}')` }"
-        :class="{ hide: !showFront }"
+        :style="{ backgroundImage: imgA ? `url('${imgA}')` : undefined }"
+        :class="{ hide: !aIsActive }"
       ></div>
       <div
         class="slide-img"
-        :style="{ backgroundImage: `url('${backImg}')` }"
-        :class="{ hide: showFront }"
+        :style="{ backgroundImage: imgB ? `url('${imgB}')` : undefined }"
+        :class="{ hide: aIsActive }"
       ></div>
     </div>
 
@@ -158,7 +175,7 @@ const raindrops = Array.from({ length: 60 }, () => ({
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 1;
-  transition: opacity 15s ease-in-out;
+  transition: opacity 5s ease-in-out;
 }
 .slide-img.hide { opacity: 0; }
 
