@@ -224,7 +224,7 @@ onUnmounted(() => {
     </section>
 
     <!-- 内容区域：hero 消失后加 pt-16 避免被固定导航栏遮挡 -->
-    <div class="container mx-auto px-4 py-10 max-w-5xl w-full" :class="{ 'pt-20': !heroVisible }">
+    <div class="container mx-auto px-4 py-10 max-w-6xl w-full" :class="{ 'pt-20': !heroVisible }">
       <!-- 内容区域：左侧简介 + 右侧上下轮播 -->
       <div class="mb-10 pb-8 border-b border-gray-200 dark:border-gray-800">
         <div class="flex flex-col md:flex-row md:items-stretch gap-8">

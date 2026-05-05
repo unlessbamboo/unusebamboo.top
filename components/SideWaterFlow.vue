@@ -111,7 +111,7 @@
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  /* 内容容器 max-w-5xl = 64rem，xl 断点以下隐藏 */
+  /* 内容容器 max-w-6xl = 72rem，xl 断点以下隐藏 */
   display: none;
 }
 
@@ -126,7 +126,7 @@
   top: 0;
   bottom: 0;
   /* 内容区两侧的空白宽度，留 1rem 安全间距 */
-  width: calc((100vw - 64rem) / 2 - 1rem);
+  width: calc((100vw - 72rem) / 2 - 1rem);
   overflow: hidden;
   /* 顶/底渐变淡出，避免硬边 */
   mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
