@@ -1,4 +1,7 @@
 <script setup lang="ts">
+const heroVisible = useHeroVisible()
+heroVisible.value = false
+
 const route = useRoute()
 const { siteName, author } = useAppConfig()
 const slug = computed(() => (route.params.slug as string[]).join('/'))
@@ -73,6 +76,12 @@ function formatWordCount(n: number) {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
   return String(n)
 }
+
+const tags = computed(() => (post.value?.tags as string[]) ?? [])
+
+const pageToc = useState<any[]>('page-toc', () => [])
+watchEffect(() => { pageToc.value = post.value?.body?.toc?.links ?? [] })
+
 </script>
 
 <template>
@@ -92,112 +101,109 @@ function formatWordCount(n: number) {
         </h1>
       </div>
 
-      <!-- 第一行:左 tags 胶囊,右 category -->
-      <div class="flex items-start justify-between gap-3 mb-3">
-        <div class="flex flex-wrap gap-2 min-w-0">
-          <NuxtLink
-            v-for="tag in post.tags"
-            :key="tag"
-            :to="`/tags/${tag}`"
-            class="text-xs px-3 py-1 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-          >
-            {{ tag }}
-          </NuxtLink>
+      <!-- 元数据行：左侧日期/字数/时长，右侧 category ( tags ) -->
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+        <!-- 左：发布日期 / 字数 / 阅读时长 / 阅读次数 -->
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span v-if="post.date" class="inline-flex items-center gap-1">
+            <Icon name="ph:calendar" class="w-4 h-4" />
+            <span>发布日期:</span>
+            <span>{{ formatDate(post.date) }}</span>
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <Icon name="ph:article" class="w-4 h-4" />
+            <span>文章字数:</span>
+            <span>{{ formatWordCount(wordCount) }}</span>
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <Icon name="ph:clock" class="w-4 h-4" />
+            <span>阅读时长:</span>
+            <span>{{ readingMinutes }} 分</span>
+          </span>
+          <span v-if="post.views != null" class="inline-flex items-center gap-1">
+            <Icon name="ph:eye" class="w-4 h-4" />
+            <span>阅读次数:</span>
+            <span>{{ post.views }}</span>
+          </span>
         </div>
-        <NuxtLink
-          v-if="post.categories?.[0]"
-          :to="`/categories/${post.categories[0]}`"
-          class="inline-flex items-center gap-1 text-sm font-medium text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors shrink-0"
-        >
-          <Icon name="ph:bookmark-simple-fill" class="w-4 h-4" />
-          {{ post.categories[0] }}
-        </NuxtLink>
-      </div>
 
-      <!-- 第二行:发布日期 / 字数 / 阅读时长 / 阅读次数 -->
-      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
-        <span v-if="post.date" class="inline-flex items-center gap-1.5">
-          <Icon name="ph:calendar" class="w-4 h-4" />
-          <span>发布日期:</span>
-          <span>{{ formatDate(post.date) }}</span>
-        </span>
-        <span class="inline-flex items-center gap-1.5">
-          <Icon name="ph:article" class="w-4 h-4" />
-          <span>文章字数:</span>
-          <span>{{ formatWordCount(wordCount) }}</span>
-        </span>
-        <span class="inline-flex items-center gap-1.5">
-          <Icon name="ph:clock" class="w-4 h-4" />
-          <span>阅读时长:</span>
-          <span>{{ readingMinutes }} 分</span>
-        </span>
-        <!-- 阅读次数:等访问统计接入后才有数据,缺值时不渲染 -->
-        <span v-if="post.views != null" class="inline-flex items-center gap-1.5">
-          <Icon name="ph:eye" class="w-4 h-4" />
-          <span>阅读次数:</span>
-          <span>{{ post.views }}</span>
-        </span>
+        <!-- 右：category ( tag1 · tag2 ) -->
+        <div class="flex items-center gap-1 shrink-0 flex-wrap">
+          <NuxtLink
+            v-if="post.categories?.[0]"
+            :to="`/categories/${post.categories[0]}`"
+            class="inline-flex items-center gap-1 font-medium text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+          >
+            <Icon name="ph:bookmark-simple-fill" class="w-4 h-4" />
+          >
+            {{ post.categories[0] }}
+          </NuxtLink>
+          <template v-if="tags.length">
+            <span class="text-gray-400 dark:text-gray-600">(</span>
+            <template v-for="(tag, i) in tags" :key="tag">
+              <NuxtLink
+                :to="`/tags/${tag}`"
+                class="hover:text-amber-700 dark:hover:text-amber-400 transition-colors"
+              >{{ tag }}</NuxtLink>
+              <span v-if="i < tags.length - 1" class="text-gray-300 dark:text-gray-600">·</span>
+            </template>
+            <span class="text-gray-400 dark:text-gray-600">)</span>
+          </template>
+        </div>
       </div>
     </header>
 
     <!-- 分割线 -->
     <hr class="border-gray-200 dark:border-gray-800 mb-8" />
 
-    <!-- 正文 + 侧栏 -->
-    <div class="lg:flex lg:gap-8 lg:items-stretch">
-      <article id="article-content" class="min-w-0 flex-1">
-        <ContentRenderer
-          :value="post"
-          class="prose prose-gray dark:prose-invert max-w-none
-                 prose-headings:font-bold prose-headings:tracking-tight
-                 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-a:no-underline hover:prose-a:underline
-                 prose-img:rounded-xl
-                 prose-blockquote:border-primary-400 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400"
-        />
+    <!-- 正文 -->
+    <article id="article-content" class="min-w-0">
+      <!-- 作者卡片：float 右侧，文字环绕 -->
+      <div class="float-right ml-6 mb-4 w-56 clear-right">
+        <AuthorCard />
+      </div>
 
-        <!-- 文章元信息：作者 / 链接 / 版权 -->
-        <div class="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 space-y-2 text-sm text-gray-500 dark:text-gray-400">
-          <div class="flex gap-2">
-            <span class="shrink-0 font-medium text-gray-700 dark:text-gray-300">文章作者：</span>
-            <span>{{ author.nickname }}</span>
+      <ContentRenderer
+        :value="post"
+        class="prose prose-gray dark:prose-invert max-w-none
+               prose-headings:font-bold prose-headings:tracking-tight
+               prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-a:no-underline hover:prose-a:underline
+               prose-img:rounded-xl
+               prose-blockquote:border-primary-400 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400"
+      />
+
+      <!-- 文章元信息：作者 / 链接 / 版权 -->
+      <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 space-y-2 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex gap-2">
+          <span class="shrink-0 font-medium text-gray-700 dark:text-gray-300">文章作者：</span>
+          <span>{{ author.nickname }}</span>
+        </div>
+        <div class="flex gap-2">
+          <span class="shrink-0 font-medium text-gray-700 dark:text-gray-300">文章链接：</span>
+          <a :href="articleUrl" class="text-primary-600 dark:text-primary-400 hover:underline break-all">
+            {{ articleUrl }}
+          </a>
+        </div>
+        <div class="flex gap-2">
+          <span class="shrink-0 font-medium text-gray-700 dark:text-gray-300">版权声明：</span>
+          <span>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener" class="text-primary-600 dark:text-primary-400 hover:underline">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</span>
+        </div>
+      </div>
+
+      <!-- 上一篇 / 下一篇 -->
+      <div v-if="prevPost || nextPost" class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
+        <div class="flex flex-wrap justify-between">
+          <div v-if="prevPost" class="w-72">
+            <span class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">上一篇</span>
+            <PostCard :post="prevPost" compact />
           </div>
-          <div class="flex gap-2">
-            <span class="shrink-0 font-medium text-gray-700 dark:text-gray-300">文章链接：</span>
-            <a :href="articleUrl" class="text-primary-600 dark:text-primary-400 hover:underline break-all">
-              {{ articleUrl }}
-            </a>
-          </div>
-          <div class="flex gap-2">
-            <span class="shrink-0 font-medium text-gray-700 dark:text-gray-300">版权声明：</span>
-            <span>本文采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener" class="text-primary-600 dark:text-primary-400 hover:underline">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</span>
+          <div v-if="nextPost" class="w-72">
+            <span class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">下一篇</span>
+            <PostCard :post="nextPost" compact />
           </div>
         </div>
+      </div>
+    </article>
 
-        <!-- 上一篇 / 下一篇 -->
-        <div v-if="prevPost || nextPost" class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div v-if="prevPost">
-              <span class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">上一篇</span>
-              <PostCard :post="prevPost" compact />
-            </div>
-            <div v-else class="hidden sm:block" />
-            <div v-if="nextPost">
-              <span class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">下一篇</span>
-              <PostCard :post="nextPost" compact />
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- 侧栏 -->
-      <aside class="hidden lg:block w-72 shrink-0">
-        <div class="sticky top-24 space-y-6 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1">
-          <AuthorCard />
-          <ArticleToc v-if="post.body?.toc?.links?.length" :toc="post.body.toc.links" />
-        </div>
-      </aside>
-    </div>
-
-  <BackToTop />
-</div>
+  </div>
 </template>

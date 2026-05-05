@@ -5,7 +5,7 @@ const parts = bio?.split('；') ?? []
 const bio1 = parts[0]
 const bio2 = parts[1]
 
-const { data: allPosts } = await useAsyncData('author-card-stats', () =>
+const { data: allPosts } = useLazyAsyncData('author-card-stats', () =>
   queryContent('/')
     .where({ _extension: 'md' })
     .only(['categories', 'tags'])
@@ -26,45 +26,45 @@ const tagCount = computed(() => {
 </script>
 
 <template>
-  <div class="rounded-xl border border-[#e5ddd0] dark:border-gray-800 bg-[#fdf9f3] dark:bg-gray-900 p-5">
-    <!-- 头像 + bio -->
-    <div class="flex items-center gap-3 mb-4">
+  <div class="rounded-xl border border-[#e5ddd0] dark:border-gray-800 bg-[#fdf9f3] dark:bg-gray-900 p-4 space-y-2.5">
+    <!-- 第一行：头像 + bio -->
+    <div class="flex items-center gap-2">
       <img
         v-if="avatar"
         :src="avatar"
         :alt="bio1"
-        class="w-12 h-12 rounded-full object-cover ring-2 ring-amber-200/60 dark:ring-amber-800/40 shrink-0"
+        class="w-10 h-10 rounded-full object-cover ring-2 ring-amber-200/60 dark:ring-amber-800/40 shrink-0"
       />
-      <div class="min-w-0 space-y-0.5">
+      <div class="min-w-0">
         <p
           v-if="bio1"
-          class="text-sm font-medium bg-gradient-to-r from-amber-700 to-amber-500 dark:from-amber-400 dark:to-amber-300 bg-clip-text text-transparent line-clamp-2 leading-snug"
+          class="text-base font-medium bg-gradient-to-r from-amber-700 to-amber-500 dark:from-amber-400 dark:to-amber-300 bg-clip-text text-transparent truncate leading-snug"
         >{{ bio1 }}</p>
         <p
           v-if="bio2"
-          class="text-sm font-medium bg-gradient-to-r from-amber-700 to-amber-500 dark:from-amber-400 dark:to-amber-300 bg-clip-text text-transparent line-clamp-2 leading-snug"
+          class="text-base font-medium bg-gradient-to-r from-amber-700 to-amber-500 dark:from-amber-400 dark:to-amber-300 bg-clip-text text-transparent truncate leading-snug"
         >{{ bio2 }}</p>
       </div>
     </div>
 
-    <!-- 统计 -->
-    <div class="flex items-center justify-around py-3 border-y border-[#ede5d8] dark:border-gray-800 text-center mb-3">
+    <!-- 第二行：统计 -->
+    <div class="flex items-center justify-around text-center border-t border-[#ede5d8] dark:border-gray-800 pt-1.5">
       <div>
-        <p class="text-base font-semibold text-amber-700 dark:text-amber-400">{{ total }}</p>
-        <p class="text-[11px] text-stone-500 dark:text-gray-400 tracking-wide">文章</p>
+        <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">{{ total }}</p>
+        <p class="text-[10px] text-stone-500 dark:text-gray-400">文章</p>
       </div>
       <div>
-        <p class="text-base font-semibold text-amber-700 dark:text-amber-400">{{ categoryCount }}</p>
-        <p class="text-[11px] text-stone-500 dark:text-gray-400 tracking-wide">分类</p>
+        <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">{{ categoryCount }}</p>
+        <p class="text-[10px] text-stone-500 dark:text-gray-400">分类</p>
       </div>
       <div>
-        <p class="text-base font-semibold text-amber-700 dark:text-amber-400">{{ tagCount }}</p>
-        <p class="text-[11px] text-stone-500 dark:text-gray-400 tracking-wide">标签</p>
+        <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">{{ tagCount }}</p>
+        <p class="text-[10px] text-stone-500 dark:text-gray-400">标签</p>
       </div>
     </div>
 
-    <!-- 社交链接 -->
-    <div v-if="socials.length" class="flex items-center gap-2">
+    <!-- 第三行：社交链接 -->
+    <div v-if="socials.length" class="flex items-center justify-around border-t border-[#ede5d8] dark:border-gray-800 pt-1.5">
       <a
         v-for="s in socials"
         :key="s.name"
@@ -72,9 +72,9 @@ const tagCount = computed(() => {
         :title="s.name"
         target="_blank"
         rel="noopener"
-        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        class="w-6 h-6 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-amber-700 dark:hover:text-amber-400 transition-colors"
       >
-        <Icon :name="s.icon" class="w-[18px] h-[18px]" />
+        <Icon :name="s.icon" class="w-3.5 h-3.5" />
       </a>
     </div>
   </div>

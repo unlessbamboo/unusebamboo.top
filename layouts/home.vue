@@ -21,5 +21,8 @@
     <aside class="page-aside page-aside--right">
       <SideWaterFlow side="right" />
     </aside>
+
   </div>
+
+  <FloatingToolbar />
 </template>
