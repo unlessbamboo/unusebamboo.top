@@ -159,7 +159,7 @@ watchEffect(() => { pageToc.value = post.value?.body?.toc?.links ?? [] })
     <!-- 正文 -->
     <article id="article-content" class="min-w-0">
       <!-- 作者卡片：float 右侧，文字环绕 -->
-      <div class="float-right ml-6 mb-4 w-56 clear-right">
+      <div class="float-right ml-6 mb-4 w-60 clear-right">
         <AuthorCard />
       </div>
 

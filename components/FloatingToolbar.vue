@@ -20,10 +20,7 @@ const dragStyle = computed(() => {
 
 function startDrag(e: MouseEvent) {
   isDragging.value = true
-  hasDragged.value = true
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  dragTop.value = rect.top
-  dragRight.value = window.innerWidth - rect.right
   dragStart = { x: e.clientX, y: e.clientY, top: rect.top, right: window.innerWidth - rect.right }
   document.addEventListener('mousemove', onDrag)
   document.addEventListener('mouseup', stopDrag)
@@ -32,6 +29,10 @@ function startDrag(e: MouseEvent) {
 function onDrag(e: MouseEvent) {
   const dx = e.clientX - dragStart.x
   const dy = e.clientY - dragStart.y
+  if (!hasDragged.value) {
+    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return
+    hasDragged.value = true
+  }
   dragTop.value = Math.max(8, dragStart.top + dy)
   dragRight.value = Math.max(8, dragStart.right - dx)
 }
@@ -60,9 +61,11 @@ const showToc = ref(false)
   >
     <button class="toolbar-btn" aria-label="回到顶部" @click="scrollTo('top')">
       <Icon name="ph:caret-up" class="w-4 h-4" />
+      <span class="toolbar-tip">回到顶部</span>
     </button>
     <NuxtLink to="/" class="toolbar-btn" aria-label="回到首页">
       <Icon name="ph:house" class="w-4 h-4" />
+      <span class="toolbar-tip">回到首页</span>
     </NuxtLink>
     <div
       v-if="pageToc.length"
@@ -79,9 +82,11 @@ const showToc = ref(false)
     </div>
     <button class="toolbar-btn" aria-label="搜索">
       <Icon name="ph:magnifying-glass" class="w-4 h-4" />
+      <span class="toolbar-tip">搜索</span>
     </button>
     <button class="toolbar-btn" aria-label="回到底部" @click="scrollTo('bottom')">
       <Icon name="ph:caret-down" class="w-4 h-4" />
+      <span class="toolbar-tip">回到底部</span>
     </button>
   </div>
 </template>
@@ -90,11 +95,8 @@ const showToc = ref(false)
 .toolbar-float {
   position: fixed;
   z-index: 50;
-  /* 默认定位：在右侧栏中间（grid: 1fr minmax(0,1280px) 1fr gap:1rem） */
-  /* 右侧栏中线距右侧: (100vw - 1280px - 2rem) / 4，小于 1312px 时 clamp */
-  right: calc(max(0.75rem, (100vw - 1280px - 2rem) / 4));
+  right: calc(max(0.75rem, (100vw - 1280px) / 2 - 50px));
   top: 55vh;
-  transform: translateX(50%);
 
   display: flex;
   flex-direction: column;
@@ -117,6 +119,7 @@ const showToc = ref(false)
 }
 
 .toolbar-btn {
+  position: relative;
   width: 2rem;
   height: 2rem;
   flex-shrink: 0;
@@ -126,6 +129,25 @@ const showToc = ref(false)
   border-radius: 999px;
   color: #92400e;
   transition: background 0.15s, color 0.15s;
+}
+
+.toolbar-tip {
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(28, 20, 10, 0.82);
+  color: #fef3c7;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.toolbar-btn:hover .toolbar-tip {
+  opacity: 1;
 }
 :global(.dark) .toolbar-btn {
   color: #fbbf24;
